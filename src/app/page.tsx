@@ -1,9 +1,12 @@
-import Image from "next/image";
+import Hero from '@/components/sheard/Hero';
+import React from 'react';
 
-export default function Home() {
+const Home = () => {
   return (
     <div>
-      
+      <Hero/>
     </div>
   );
-}
+};
+
+export default Home;
