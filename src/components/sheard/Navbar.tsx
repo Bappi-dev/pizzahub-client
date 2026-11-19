@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, LayoutDashboard, LogOut, Pizza, Settings } from "lucide-react";
+import {
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Pizza,
+  Settings,
+} from "lucide-react";
 import { useState } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { signOut, useSession } from "@/lib/auth-client";
@@ -22,7 +28,9 @@ const Navbar = () => {
       const { error } = await signOut();
 
       if (error) {
-        setSignOutError(error.message ?? "We couldn't sign you out. Please try again.");
+        setSignOutError(
+          error.message ?? "We couldn't sign you out. Please try again.",
+        );
         return;
       }
 
@@ -46,8 +54,8 @@ const Navbar = () => {
   const navLinkClassName = (href: string) =>
     `rounded-md px-3 py-2 text-sm font-medium transition-colors ${
       isActive(href)
-        ? "bg-orange-100 text-orange-800"
-        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        ? " text-red-500 font-bold hover:underline"
+        : "text-muted-foreground hover:text-foreground"
     }`;
 
   return (
@@ -70,20 +78,48 @@ const Navbar = () => {
           aria-label="Primary navigation"
           className="order-3 flex basis-full items-center justify-center gap-1 border-t pt-2 md:order-0 md:basis-auto md:border-0 md:pt-0"
         >
-          <Link
-            href="/"
-            className={navLinkClassName("/")}
-            aria-current={isActive("/") ? "page" : undefined}
-          >
-            Home
-          </Link>
-          <Link
-            href="/menu"
-            className={navLinkClassName("/menu")}
-            aria-current={isActive("/menu") ? "page" : undefined}
-          >
-            Browse Menu
-          </Link>
+          {session ? (
+            <>
+              <Link
+                href="/"
+                className={navLinkClassName("/")}
+                aria-current={isActive("/") ? "page" : undefined}
+              >
+                Home
+              </Link>
+              <Link
+                href="/menu"
+                className={navLinkClassName("/menu")}
+                aria-current={isActive("/menu") ? "page" : undefined}
+              >
+                Browse Menu
+              </Link>
+              <Link
+                href="/dashboard"
+                className={navLinkClassName("/dashboard")}
+                aria-current={isActive("/dashboard") ? "page" : undefined}
+              >
+               Dashboard
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/"
+                className={navLinkClassName("/")}
+                aria-current={isActive("/") ? "page" : undefined}
+              >
+                Home
+              </Link>
+              <Link
+                href="/menu"
+                className={navLinkClassName("/menu")}
+                aria-current={isActive("/menu") ? "page" : undefined}
+              >
+                Browse Menu
+              </Link>
+            </>
+          )}
         </nav>
 
         {session ? (
@@ -99,7 +135,10 @@ const Navbar = () => {
                 {session.user.name.trim().charAt(0).toUpperCase() || "U"}
               </span>
               <span className="max-w-28 truncate">{session.user.name}</span>
-              <ChevronDown aria-hidden="true" className="size-4 text-stone-500" />
+              <ChevronDown
+                aria-hidden="true"
+                className="size-4 text-stone-500"
+              />
             </Menu.Trigger>
             <Menu.Portal>
               <Menu.Positioner sideOffset={8} align="end" className="z-50">
