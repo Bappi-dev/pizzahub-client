@@ -1,9 +1,9 @@
 
 import Image from "next/image";
+import Link from "next/link";
 import { MapPin, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 type MenuItem = {
   _id: string;
@@ -19,7 +19,7 @@ type MenuCardProps = {
 };
 
 const MenuCard = ({ menu }: MenuCardProps) => {
-  const { itemImage, location, category, price, name } = menu;
+  const { _id, itemImage, location, category, price, name } = menu;
   const formattedPrice =
     typeof price === "number" ? `$${price.toFixed(2)}` : price;
 
@@ -64,16 +64,15 @@ const MenuCard = ({ menu }: MenuCardProps) => {
           </p>
         )}
 
-       <Link href={'/'}>
         <Button
           type="button"
           size="lg"
           className="mt-5 cursor-pointer h-11 w-full rounded-xl bg-[#B34B31] text-sm font-bold text-white shadow-[0_8px_20px_-10px_rgba(179,75,49,0.8)] hover:bg-[#963D29]"
+          render={<Link href={`/menu/${_id}`} />}
         >
           <Plus className="size-4" strokeWidth={2.5} />
-          View detalis
+          View details
         </Button>
-       </Link>
       </div>
     </article>
   );

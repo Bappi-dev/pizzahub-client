@@ -2,12 +2,12 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 
-const client = new MongoClient(process.env.DB_URI as string);
-const db = client.db("Pizzahub");
+export const mongoClient = new MongoClient(process.env.DB_URI as string);
+export const db = mongoClient.db("Pizzahub");
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
-    client,
+    client: mongoClient,
   }),
   emailAndPassword: {
     enabled: true,
@@ -17,7 +17,12 @@ export const auth = betterAuth({
       role: {
         type: ["vendor", "admin", "customer"],
         input: false,
-        defaultValue: "customer"
+        defaultValue: "customer",
+      },
+      plan: {
+        type: ["free", "premium"],
+        input: false,
+        defaultValue: "free",
       },
     },
   },
