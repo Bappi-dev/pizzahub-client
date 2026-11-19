@@ -1,132 +1,111 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+import { ArrowRight, Bike, Search, ShoppingBag } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, MapPin, ShieldCheck, Star } from "lucide-react";
 
-const pizzaImage =
-  "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=1400&q=85";
-
-const trustPoints = [
+const steps = [
   {
-    icon: MapPin,
-    title: "Discover your local legends",
-    description: "Independent pizzerias, all in one delicious place.",
+    icon: Search,
+    title: "Browse the menu",
+    description: "Explore neighborhood pizzerias and find your kind of pie.",
   },
   {
-    icon: ShieldCheck,
-    title: "Order with confidence",
-    description: "Clear details and a simple way to find your next favorite.",
+    icon: ShoppingBag,
+    title: "Pick your favorites",
+    description: "Choose what you are craving and place your order with ease.",
+  },
+  {
+    icon: Bike,
+    title: "Enjoy the good stuff",
+    description: "Your local pizzeria gets cooking and brings it to your door.",
   },
 ];
 
+const listVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.12 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export default function HowPizzaHubWorks() {
   const reduceMotion = useReducedMotion();
-  const entrance = (direction: "left" | "right") => ({
-    initial: reduceMotion
-      ? false
-      : { opacity: 0, x: direction === "left" ? -18 : 18 },
-    whileInView: { opacity: 1, x: 0 },
-    viewport: { once: true, amount: 0.25 },
-    transition: {
-      duration: reduceMotion ? 0 : 0.55,
-      ease: "easeOut" as const,
-    },
-  });
 
   return (
     <section
-      aria-labelledby="how-pizzahub-works-heading"
-      className="overflow-hidden bg-[#FFFAF4] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24"
+      aria-labelledby="how-it-works-heading"
+      className="bg-[#F4ECE3] px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
     >
-      <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1.08fr_0.92fr] md:gap-16">
-        <motion.div
-          {...entrance("left")}
-          className="relative"
-        >
-          <div className="relative aspect-[1.3] overflow-hidden rounded-2xl bg-[#E8D8C8] shadow-[0_24px_60px_-34px_rgba(54,34,23,0.5)]">
-            <Image
-              src={pizzaImage}
-              alt="Freshly baked pizza coming out of a wood-fired oven"
-              fill
-              sizes="(max-width: 768px) 100vw, 55vw"
-              className="object-cover"
-            />
-          </div>
-
+      <div className="mx-auto max-w-6xl">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{
-              duration: reduceMotion ? 0 : 0.4,
-              delay: reduceMotion ? 0 : 0.2,
-              ease: "easeOut",
-            }}
-            className="absolute -bottom-4 right-3 flex items-center gap-3 rounded-xl border border-[#F0E5DB] bg-white px-4 py-3 shadow-[0_16px_40px_-20px_rgba(54,34,23,0.4)] sm:-right-4 sm:px-5"
+            initial={reduceMotion ? false : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={itemVariants}
+            transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
           >
-            <span className="grid size-9 place-items-center rounded-full bg-[#FFF2E5] text-[#B34B31]">
-              <Star aria-hidden="true" className="size-4 fill-current" />
-            </span>
-            <div>
-              <p className="flex items-center gap-2 font-serif text-2xl font-bold leading-none text-[#261C16]">
-                4.9
-              </p>
-              <p className="mt-1 text-[10px] text-[#766A60]">
-                average neighborhood rating
-              </p>
-            </div>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#B34B31]">
+              THREE SIMPLE STEPS
+            </p>
+            <h2
+              id="how-it-works-heading"
+              className="mt-3 font-serif text-4xl leading-tight tracking-tight text-[#201A17] sm:text-5xl"
+            >
+              How PizzaHub <span className="italic text-[#B34B31]">works.</span>
+            </h2>
           </motion.div>
-        </motion.div>
+          <p className="max-w-sm text-sm leading-6 text-[#665B52]">
+            From first browse to that first bite, getting a great local pizza is
+            easy.
+          </p>
+        </div>
 
-        <motion.div
-          {...entrance("right")}
-          className="pt-2 md:pt-0"
+        <motion.ol
+          className="mt-9 grid gap-4 md:grid-cols-3"
+          initial={reduceMotion ? false : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={listVariants}
         >
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#B34B31]">
-            MORE THAN A PIZZA RUN
-          </p>
-          <h2
-            id="how-pizzahub-works-heading"
-            className="mt-4 font-serif text-5xl leading-[0.98] tracking-tight text-[#241B16] sm:text-6xl"
-          >
-            Local pies.
-            <span className="block italic text-[#B34B31]">Full hearts.</span>
-          </h2>
-          <p className="mt-5 max-w-lg text-sm leading-7 text-[#665B52] sm:text-[15px]">
-            We bring the neighborhood&apos;s best ovens a little closer to your
-            couch. Every order supports a real local shop and the people who
-            make it special.
-          </p>
-
-          <div className="mt-6 space-y-4">
-            {trustPoints.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="flex items-center gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#F6E8DA] text-[#B34B31]">
-                  <Icon aria-hidden="true" className="size-[18px]" />
+          {steps.map(({ icon: Icon, title, description }, index) => (
+            <motion.li
+              key={title}
+              variants={itemVariants}
+              transition={{
+                duration: reduceMotion ? 0 : 0.45,
+                ease: "easeOut",
+              }}
+              className="relative flex min-h-52 flex-col rounded-2xl border border-[#E6D8CA] bg-[#FFFAF5] p-5 sm:p-6"
+            >
+              <div className="flex items-center justify-between">
+                <span className="grid size-12 place-items-center rounded-2xl bg-[#B34B31] text-white shadow-[0_8px_20px_-12px_rgba(179,75,49,0.9)]">
+                  <Icon aria-hidden="true" className="size-5" />
                 </span>
-                <div>
-                  <h3 className="text-sm font-bold text-[#2D241E]">{title}</h3>
-                  <p className="mt-1 text-xs leading-5 text-[#766A60]">
-                    {description}
-                  </p>
-                </div>
+                <span className="font-serif text-3xl font-bold text-[#E8D9CC]">
+                  0{index + 1}
+                </span>
               </div>
-            ))}
-          </div>
-
-          <Link
-            href="/menu"
-            className="group mt-7 inline-flex h-11 items-center gap-3 rounded-xl bg-[#2D211B] px-5 text-sm font-bold text-white transition-colors hover:bg-[#B34B31] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B34B31] focus-visible:ring-offset-2"
-          >
-            Find your new favorite
-            <ArrowRight
-              aria-hidden="true"
-              className="size-4 transition-transform group-hover:translate-x-1"
-            />
-          </Link>
-        </motion.div>
+              <h3 className="mt-6 font-serif text-xl font-bold text-[#30251F]">
+                {title}
+              </h3>
+              <p className="mt-2 max-w-sm text-sm leading-6 text-[#74685F]">
+                {description}
+              </p>
+              {index < steps.length - 1 && (
+                <ArrowRight
+                  aria-hidden="true"
+                  className="absolute -right-3 top-1/2 z-10 hidden size-6 -translate-y-1/2 rounded-full bg-[#B34B31] p-1 text-white md:block"
+                />
+              )}
+            </motion.li>
+          ))}
+        </motion.ol>
       </div>
     </section>
   );

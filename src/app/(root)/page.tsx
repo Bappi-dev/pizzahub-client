@@ -2,6 +2,7 @@ import FeatureStrip from "@/components/sheard/FeatureStrip";
 import Hero from "@/components/sheard/Hero";
 import HowPizzaHubWorks from "@/components/sheard/HowPizzaHubWorks";
 import PizzaCategories from "@/components/sheard/PizzaCategories";
+import Tostify from "@/components/sheard/Tostify";
 import WhyChoose from "@/components/sheard/WhyChoose";
 import React from "react";
 
@@ -13,6 +14,7 @@ const Home = () => {
       <PizzaCategories />
       <HowPizzaHubWorks />
       <WhyChoose />
+      <Tostify />
     </div>
   );
 };
