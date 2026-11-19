@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Pizza } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  ClipboardList,
+  Clock3,
+  Pizza,
+  XCircle,
+} from "lucide-react";
 
 import { useSession } from "@/lib/auth-client";
 import {
@@ -100,19 +107,70 @@ export default function CustomerOverview() {
         </Link>
       </article>
 
+      <section
+        aria-label="Order overview"
+        className="mt-6 grid max-w-5xl gap-3 sm:grid-cols-2 xl:grid-cols-4"
+      >
+        {[
+          {
+            label: "Total orders",
+            count: orders.length,
+            icon: ClipboardList,
+            color: "bg-[#FCE9E3] text-[#A93422]",
+          },
+          {
+            label: "Pending",
+            count: orders.filter((order) => order.status === "pending").length,
+            icon: Clock3,
+            color: "bg-amber-50 text-amber-700",
+          },
+          {
+            label: "Accepted",
+            count: orders.filter((order) => order.status === "accepted").length,
+            icon: CheckCircle2,
+            color: "bg-green-50 text-green-700",
+          },
+          {
+            label: "Rejected",
+            count: orders.filter((order) => order.status === "rejected").length,
+            icon: XCircle,
+            color: "bg-red-50 text-red-700",
+          },
+        ].map(({ label, count, icon: Icon, color }) => (
+          <article
+            key={label}
+            className="flex items-center gap-4 rounded-xl border border-[#E6D8CA] bg-white p-4"
+          >
+            <span
+              className={`grid size-11 shrink-0 place-items-center rounded-xl ${color}`}
+            >
+              <Icon aria-hidden="true" className="size-5" />
+            </span>
+            <div>
+              <p className="text-sm font-medium text-[#766A60]">{label}</p>
+              <p className="mt-0.5 text-2xl font-bold text-[#281E18]">
+                {isLoadingOrders || ordersError ? "—" : count}
+              </p>
+            </div>
+          </article>
+        ))}
+      </section>
+
       <section className="mt-8 max-w-3xl">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h2 className="font-serif text-2xl text-[#281E18]">Your orders</h2>
+            <h2 className="font-serif text-2xl text-[#281E18]">Recent orders</h2>
             <p className="mt-1 text-sm text-[#766A60]">
               Track responses from your restaurants.
             </p>
           </div>
-          {orders.length > 0 && (
-            <span className="rounded-full bg-[#FCE9E3] px-3 py-1 text-xs font-bold text-[#A93422]">
-              {orders.length}
-            </span>
-          )}
+          <Link
+            href="/dashboard/customer/orders"
+            className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-[#A93422] hover:text-[#81271B]"
+          >
+            My Orders
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
         </div>
 
         {ordersError ? (
@@ -163,7 +221,9 @@ export default function CustomerOverview() {
                           ? "bg-green-50 text-green-700"
                           : order.status === "rejected"
                             ? "bg-red-50 text-red-700"
-                            : "bg-amber-50 text-amber-800"
+                            : order.status === "cancelled"
+                              ? "bg-stone-100 text-stone-700"
+                              : "bg-amber-50 text-amber-800"
                       }`}
                     >
                       {order.status || "pending"}

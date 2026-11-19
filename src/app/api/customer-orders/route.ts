@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { ObjectId, type Document } from "mongodb";
+import { MongoServerError, ObjectId, type Document } from "mongodb";
 
 import { auth, db } from "@/lib/auth";
 
@@ -129,6 +129,31 @@ export async function POST(request: Request) {
     );
   }
 
+  const orderCollection = db.collection("oder");
+  await orderCollection.createIndex(
+    { activeOrderKey: 1 },
+    {
+      unique: true,
+      partialFilterExpression: { activeOrderKey: { $type: "string" } },
+    },
+  );
+
+  const activeOrderFilter = {
+    customerId: result.session.user.id,
+    menuItemId: item._id.toString(),
+    deliveryDate,
+    status: { $in: ["pending", "accepted"] },
+  };
+  if (await orderCollection.findOne(activeOrderFilter, { projection: { _id: 1 } })) {
+    return Response.json(
+      {
+        error:
+          "You already have an active order for this item on that delivery date.",
+      },
+      { status: 409 },
+    );
+  }
+
   const order = {
     customerId: result.session.user.id,
     customerName: result.session.user.name,
@@ -141,6 +166,11 @@ export async function POST(request: Request) {
     image: item.itemImage,
     price: Number(item.price),
     deliveryDate,
+    activeOrderKey: JSON.stringify([
+      result.session.user.id,
+      item._id.toString(),
+      deliveryDate,
+    ]),
     deliveryAddress: deliveryAddress.trim(),
     specialInstructions:
       typeof value.specialInstructions === "string"
@@ -150,7 +180,21 @@ export async function POST(request: Request) {
     createdAt: new Date(),
   };
 
-  const inserted = await db.collection("oder").insertOne(order);
+  let inserted;
+  try {
+    inserted = await orderCollection.insertOne(order);
+  } catch (error: unknown) {
+    if (error instanceof MongoServerError && error.code === 11000) {
+      return Response.json(
+        {
+          error:
+            "You already have an active order for this item on that delivery date.",
+        },
+        { status: 409 },
+      );
+    }
+    throw error;
+  }
   return Response.json(
     { order: serializeOrder({ ...order, _id: inserted.insertedId }) },
     { status: 201 },

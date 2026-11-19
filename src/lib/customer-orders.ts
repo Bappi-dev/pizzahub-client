@@ -12,7 +12,7 @@ export type CustomerOrder = {
   deliveryAddress: string;
   specialInstructions?: string;
   createdAt: string;
-  status?: "pending" | "accepted" | "rejected";
+  status?: "pending" | "accepted" | "rejected" | "cancelled";
 };
 
 export type NewCustomerOrder = Omit<CustomerOrder, "id" | "createdAt">;
@@ -43,7 +43,8 @@ function isCustomerOrder(value: unknown): value is CustomerOrder {
     (order.status === undefined ||
       order.status === "pending" ||
       order.status === "accepted" ||
-      order.status === "rejected")
+    order.status === "rejected" ||
+    order.status === "cancelled")
   );
 }
 

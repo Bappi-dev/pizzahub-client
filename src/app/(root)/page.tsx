@@ -1,4 +1,5 @@
 import FeatureStrip from "@/components/sheard/FeatureStrip";
+import FeaturedMenu from "@/components/sheard/FeaturedMenu";
 import Hero from "@/components/sheard/Hero";
 import HowPizzaHubWorks from "@/components/sheard/HowPizzaHubWorks";
 import PizzaCategories from "@/components/sheard/PizzaCategories";
@@ -11,6 +12,7 @@ const Home = () => {
     <div>
       <Hero />
       <FeatureStrip />
+      <FeaturedMenu />
       <PizzaCategories />
       <HowPizzaHubWorks />
       <WhyChoose />

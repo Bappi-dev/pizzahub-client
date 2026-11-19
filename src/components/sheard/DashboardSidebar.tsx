@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   ListOrdered,
   LogOut,
-  Pizza,
   PlusCircle,
   UserRound,
 } from "lucide-react";
@@ -30,10 +29,16 @@ type NavItem = {
 const roleBasedSidebarItem: Record<DashboardRole, NavItem[]> = {
   customer: [
     {
-      id: "place-order",
-      title: "Place an order",
-      href: "/menu",
-      icon: Pizza,
+      id: "customer-overview",
+      title: "Overview",
+      href: "/dashboard/customer",
+      icon: LayoutDashboard,
+    },
+    {
+      id: "customer-orders",
+      title: "My Orders",
+      href: "/dashboard/customer/orders",
+      icon: ListOrdered,
     },
   ],
   vendor: [
@@ -115,7 +120,9 @@ const DashboardSidebar = () => {
     const cleanHref = href === "/" ? "/" : href.replace(/\/+$/, "");
     if (cleanHref === "/") return pathname === "/";
     return (
-      pathname === cleanHref || pathname.startsWith(`${cleanHref}/`)
+      pathname === cleanHref ||
+      (cleanHref !== `/dashboard/${role}` &&
+        pathname.startsWith(`${cleanHref}/`))
     );
   };
 

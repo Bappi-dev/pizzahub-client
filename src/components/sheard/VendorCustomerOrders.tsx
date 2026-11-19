@@ -28,7 +28,7 @@ type VendorOrder = {
   deliveryDate: string;
   deliveryAddress: string;
   specialInstructions?: string;
-  status: "pending" | "accepted" | "rejected";
+  status: "pending" | "accepted" | "rejected" | "cancelled";
   createdAt: string;
 };
 
@@ -54,7 +54,8 @@ function isVendorOrder(value: unknown): value is VendorOrder {
       typeof value.specialInstructions === "string") &&
     (value.status === "pending" ||
       value.status === "accepted" ||
-      value.status === "rejected") &&
+      value.status === "rejected" ||
+      value.status === "cancelled") &&
     typeof value.createdAt === "string"
   );
 }
@@ -81,6 +82,7 @@ const statusClassNames: Record<VendorOrder["status"], string> = {
   pending: "bg-amber-50 text-amber-800",
   accepted: "bg-green-50 text-green-700",
   rejected: "bg-red-50 text-red-700",
+  cancelled: "bg-stone-100 text-stone-700",
 };
 
 export default function VendorCustomerOrders() {
@@ -416,7 +418,9 @@ export default function VendorCustomerOrders() {
               </div>
             ) : (
               <p className="mt-5 text-right text-xs font-medium text-[#75685F]">
-                This order has already been decided and cannot be changed.
+                {selectedOrder.status === "cancelled"
+                  ? "The customer cancelled this order."
+                  : "This order has already been decided and cannot be changed."}
               </p>
             )}
           </section>

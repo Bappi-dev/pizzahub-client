@@ -49,9 +49,17 @@ export async function PATCH(request: Request, context: RouteContext) {
     vendorId: session.user.id,
     status: "pending",
   };
-  const update = await orderCollection.updateOne(orderFilter, {
-    $set: { status, decidedAt: new Date(), updatedAt: new Date() },
-  });
+  const update = await orderCollection.updateOne(
+    orderFilter,
+    status === "rejected"
+      ? {
+          $set: { status, decidedAt: new Date(), updatedAt: new Date() },
+          $unset: { activeOrderKey: "" },
+        }
+      : {
+          $set: { status, decidedAt: new Date(), updatedAt: new Date() },
+        },
+  );
 
   if (update.matchedCount === 0) {
     const existing = await orderCollection.findOne({

@@ -1,7 +1,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Plus } from "lucide-react";
+import { MapPin, Plus, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +12,7 @@ type MenuItem = {
   location?: string;
   category?: string;
   price: number | string;
+  vendorName?: string;
 };
 
 type MenuCardProps = {
@@ -19,7 +20,7 @@ type MenuCardProps = {
 };
 
 const MenuCard = ({ menu }: MenuCardProps) => {
-  const { _id, itemImage, location, category, price, name } = menu;
+  const { _id, itemImage, location, category, price, name, vendorName } = menu;
   const formattedPrice =
     typeof price === "number" ? `$${price.toFixed(2)}` : price;
 
@@ -57,6 +58,13 @@ const MenuCard = ({ menu }: MenuCardProps) => {
           </p>
         </div>
 
+        {vendorName && (
+          <p className="mt-2 flex items-center gap-1.5 text-sm text-[#777068]">
+            <Store className="size-4 shrink-0 text-[#B34B31]" strokeWidth={2} />
+            <span className="truncate">{vendorName}</span>
+          </p>
+        )}
+
         {location && (
           <p className="mt-2 flex items-center gap-1.5 text-sm text-[#777068]">
             <MapPin className="size-4 text-[#B34B31]" strokeWidth={2} />
@@ -71,7 +79,7 @@ const MenuCard = ({ menu }: MenuCardProps) => {
           render={<Link href={`/menu/${_id}`} />}
         >
           <Plus className="size-4" strokeWidth={2.5} />
-          View details
+          View Details
         </Button>
       </div>
     </article>
