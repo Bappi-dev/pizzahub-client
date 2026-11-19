@@ -3,6 +3,7 @@ import Image from "next/image";
 import { MapPin, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type MenuItem = {
   _id: string;
@@ -63,14 +64,16 @@ const MenuCard = ({ menu }: MenuCardProps) => {
           </p>
         )}
 
+       <Link href={'/'}>
         <Button
           type="button"
           size="lg"
-          className="mt-5 h-11 w-full rounded-xl bg-[#B34B31] text-sm font-bold text-white shadow-[0_8px_20px_-10px_rgba(179,75,49,0.8)] hover:bg-[#963D29]"
+          className="mt-5 cursor-pointer h-11 w-full rounded-xl bg-[#B34B31] text-sm font-bold text-white shadow-[0_8px_20px_-10px_rgba(179,75,49,0.8)] hover:bg-[#963D29]"
         >
           <Plus className="size-4" strokeWidth={2.5} />
           View detalis
         </Button>
+       </Link>
       </div>
     </article>
   );

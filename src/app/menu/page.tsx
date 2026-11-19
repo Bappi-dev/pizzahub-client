@@ -14,6 +14,24 @@ type MenuItem = {
   price: number | string;
 };
 
+const isMenuItem = (value: unknown): value is MenuItem => {
+  if (typeof value !== "object" || value === null) return false;
+
+  const item = value as Record<string, unknown>;
+  const hasValidPrice =
+    (typeof item.price === "number" && Number.isFinite(item.price)) ||
+    (typeof item.price === "string" &&
+      item.price.trim() !== "" &&
+      Number.isFinite(Number(item.price)));
+
+  return (
+    typeof item._id === "string" &&
+    typeof item.name === "string" &&
+    typeof item.itemImage === "string" &&
+    hasValidPrice
+  );
+};
+
 const categories = [
   "All",
   "Classic Pizzas",
@@ -42,9 +60,26 @@ const BrowesMenu = () => {
   useEffect(() => {
     const loadMenu = async () => {
       try {
-        const res = await fetch("http://localhost:5000/pizza");
+        const res = await fetch("http://localhost:5000/menuItems");
         if (!res.ok) throw new Error("Failed to load menu");
-        setMenuData((await res.json()) as MenuItem[]);
+        const response: unknown = await res.json();
+        if (!Array.isArray(response)) {
+          throw new Error("Menu response must be an array");
+        }
+
+        const validItems = response.filter(isMenuItem);
+        setMenuData(
+          validItems.map(
+            ({ _id, name, itemImage, location, category, price }) => ({
+              _id,
+              name,
+              itemImage,
+              location,
+              category,
+              price,
+            }),
+          ),
+        );
       } catch {
         setMenuData([]);
       } finally {
@@ -243,7 +278,17 @@ const BrowesMenu = () => {
       ) : visibleMenu.length > 0 ? (
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visibleMenu.map((data) => (
-            <MenuCard key={data._id} menu={data} />
+            <MenuCard
+              key={data._id}
+              menu={{
+                _id: data._id,
+                name: data.name,
+                itemImage: data.itemImage,
+                location: data.location,
+                category: data.category,
+                price: data.price,
+              }}
+            />
           ))}
         </div>
       ) : (

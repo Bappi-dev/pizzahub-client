@@ -4,31 +4,69 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ClipboardList,
   LayoutDashboard,
+  ListOrdered,
   LogOut,
-  Settings,
+  UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signOut, useSession } from "@/lib/auth-client";
+import {
+  isDashboardRole,
+  type DashboardRole,
+} from "@/lib/dashboard-roles";
 
-const navigationItems = [
-  {
-    href: "/dashboard",
-    label: "Overview",
-    Icon: LayoutDashboard,
-  },
-  {
-    href: "/dashboard/orders",
-    label: "My orders",
-    Icon: ClipboardList,
-  },
-  {
-    href: "/profile/settings",
-    label: "Profile settings",
-    Icon: Settings,
-  },
-];
+const roleBasedSidebarItem = {
+  customer: [
+    {
+      title: "Overview",
+      href: "/dashboard/customer",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "My Orders",
+      href: "/dashboard/orders",
+      icon: ListOrdered,
+    },
+    {
+      title: "My profile",
+      href: "/profile/settings",
+      icon: UserRound,
+    },
+  ],
+  vendor: [
+    {
+      title: "Overview",
+      href: "/dashboard/vendor",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "My profile",
+      href: "/profile/settings",
+      icon: UserRound,
+    },
+  ],
+  admin: [
+    {
+      title: "Overview",
+      href: "/dashboard/admin",
+      icon: LayoutDashboard,
+    },
+     {
+      title: "My Orders",
+      href: "/dashboard/orders",
+      icon: ListOrdered,
+    },
+    {
+      title: "My profile",
+      href: "/profile/settings",
+      icon: UserRound,
+    },
+  ],
+} satisfies Record<
+  DashboardRole,
+  { title: string; href: string; icon: typeof LayoutDashboard }[]
+>;
 
 const DashboardSidebar = () => {
   const pathname = usePathname();
@@ -38,6 +76,11 @@ const DashboardSidebar = () => {
   const [signOutError, setSignOutError] = useState<string | null>(null);
   const displayName = session?.user.name?.trim() || "User";
   const displayEmail = session?.user.email?.trim() || "";
+
+  const role = isDashboardRole(session?.user.role)
+    ? session.user.role
+    : "customer";
+  const navigationItems = roleBasedSidebarItem[role];
 
   const isActive = (href: string) =>
     pathname === href ||
@@ -78,7 +121,7 @@ const DashboardSidebar = () => {
             Workspace
           </p>
           <ul className="flex gap-1 overflow-x-auto lg:flex-col">
-            {navigationItems.map(({ href, label, Icon }) => {
+            {navigationItems.map(({ href, title, icon: Icon }) => {
               const active = isActive(href);
 
               return (
@@ -94,7 +137,7 @@ const DashboardSidebar = () => {
                     render={<Link href={href} />}
                   >
                     <Icon aria-hidden="true" className="size-4" />
-                    {label}
+                    {title}
                   </Button>
                 </li>
               );
