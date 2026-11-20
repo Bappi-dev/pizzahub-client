@@ -8,6 +8,7 @@ import {
   Clock3,
   LoaderCircle,
   MapPin,
+  Trash2,
   X,
   XCircle,
 } from "lucide-react";
@@ -17,18 +18,18 @@ import { Button } from "@/components/ui/button";
 
 type VendorOrder = {
   id: string;
-  menuItemId: string;
-  customerName: string;
-  customerEmail: string;
-  vendorId: string;
-  vendorName: string;
-  name: string;
+  menuItemId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  vendorId?: string;
+  vendorName?: string;
+  name?: string;
   image?: string;
-  price: number;
-  deliveryDate: string;
-  deliveryAddress: string;
+  price?: number;
+  deliveryDate?: string;
+  deliveryAddress?: string;
   specialInstructions?: string;
-  status: "pending" | "accepted" | "rejected" | "cancelled";
+  status?: string;
   createdAt: string;
 };
 
@@ -40,22 +41,24 @@ function isVendorOrder(value: unknown): value is VendorOrder {
   return (
     isRecord(value) &&
     typeof value.id === "string" &&
-    typeof value.menuItemId === "string" &&
-    typeof value.customerName === "string" &&
-    typeof value.customerEmail === "string" &&
-    typeof value.vendorId === "string" &&
-    typeof value.vendorName === "string" &&
-    typeof value.name === "string" &&
+    (value.menuItemId === undefined || typeof value.menuItemId === "string") &&
+    (value.customerName === undefined ||
+      typeof value.customerName === "string") &&
+    (value.customerEmail === undefined ||
+      typeof value.customerEmail === "string") &&
+    (value.vendorId === undefined || typeof value.vendorId === "string") &&
+    (value.vendorName === undefined || typeof value.vendorName === "string") &&
+    (value.name === undefined || typeof value.name === "string") &&
     (value.image === undefined || typeof value.image === "string") &&
-    typeof value.price === "number" &&
-    typeof value.deliveryDate === "string" &&
-    typeof value.deliveryAddress === "string" &&
+    (value.price === undefined ||
+      (typeof value.price === "number" && Number.isFinite(value.price))) &&
+    (value.deliveryDate === undefined ||
+      typeof value.deliveryDate === "string") &&
+    (value.deliveryAddress === undefined ||
+      typeof value.deliveryAddress === "string") &&
     (value.specialInstructions === undefined ||
       typeof value.specialInstructions === "string") &&
-    (value.status === "pending" ||
-      value.status === "accepted" ||
-      value.status === "rejected" ||
-      value.status === "cancelled") &&
+    (value.status === undefined || typeof value.status === "string") &&
     typeof value.createdAt === "string"
   );
 }
@@ -78,11 +81,12 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 }
 
-const statusClassNames: Record<VendorOrder["status"], string> = {
+const statusClassNames: Record<string, string> = {
   pending: "bg-amber-50 text-amber-800",
   accepted: "bg-green-50 text-green-700",
   rejected: "bg-red-50 text-red-700",
   cancelled: "bg-stone-100 text-stone-700",
+  unknown: "bg-stone-100 text-stone-700",
 };
 
 export default function VendorCustomerOrders() {
@@ -181,6 +185,45 @@ export default function VendorCustomerOrders() {
     }
   }
 
+  async function deleteOrder(order: VendorOrder) {
+    if (
+      !window.confirm(
+        `Delete the order for ${order.name || "this menu item"}? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    setBusyOrderId(order.id);
+    try {
+      const response = await fetch(`/api/vendor/orders/${order.id}`, {
+        method: "DELETE",
+      });
+      const value: unknown = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          getErrorMessage(value, "Could not delete this order."),
+        );
+      }
+      if (!isRecord(value) || value.id !== order.id) {
+        throw new Error("The server returned an invalid deletion response.");
+      }
+
+      setOrders((current) => current.filter((item) => item.id !== order.id));
+      setSelectedOrder((current) =>
+        current?.id === order.id ? null : current,
+      );
+      toast.success("Order deleted.");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not delete this order.",
+      );
+    } finally {
+      setBusyOrderId(null);
+    }
+  }
+
   return (
     <section className="mx-auto w-full max-w-6xl py-2 sm:py-4">
       <header className="mb-7">
@@ -245,7 +288,7 @@ export default function VendorCustomerOrders() {
                 <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-[#F5EFEA]">
                   <Image
                     src={order.image}
-                    alt={order.name}
+                    alt={order.name || "Menu item"}
                     fill
                     sizes="64px"
                     className="object-cover"
@@ -258,18 +301,23 @@ export default function VendorCustomerOrders() {
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-semibold text-[#30231B]">{order.name}</h2>
+                  <h2 className="font-semibold text-[#30231B]">
+                    {order.name || "Menu item details unavailable"}
+                  </h2>
                   <span
-                    className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusClassNames[order.status]}`}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusClassNames[order.status ?? "unknown"] ?? statusClassNames.unknown}`}
                   >
-                    {order.status}
+                    {order.status ?? "unknown"}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-[#75685F]">
-                  {order.customerName} · {formatPrice(order.price)}
+                  {order.customerName || "Customer"} ·{" "}
+                  {order.price === undefined
+                    ? "Price unavailable"
+                    : formatPrice(order.price)}
                 </p>
                 <p className="mt-1 text-xs text-[#8B7D72]">
-                  Delivery {order.deliveryDate} · Placed{" "}
+                  Delivery {order.deliveryDate || "date unavailable"} · Placed{" "}
                   {formatDate(order.createdAt)}
                 </p>
               </div>
@@ -277,9 +325,27 @@ export default function VendorCustomerOrders() {
                 type="button"
                 variant="outline"
                 onClick={() => setSelectedOrder(order)}
+                disabled={busyOrderId === order.id}
                 className="h-10 shrink-0 rounded-lg border-[#E8DED3] px-4 text-xs font-semibold text-[#55473D] hover:bg-[#FFF8F3]"
               >
                 View details
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void deleteOrder(order)}
+                disabled={busyOrderId === order.id}
+                className="h-10 shrink-0 rounded-lg border-red-200 px-4 text-xs font-semibold text-red-700 hover:bg-red-50"
+              >
+                {busyOrderId === order.id ? (
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className="size-4 animate-spin"
+                  />
+                ) : (
+                  <Trash2 aria-hidden="true" className="size-4" />
+                )}
+                Delete
               </Button>
             </article>
           ))}
@@ -316,12 +382,12 @@ export default function VendorCustomerOrders() {
                 id="order-detail-title"
                 className="font-serif text-2xl font-bold text-[#30231B]"
               >
-                {selectedOrder.name}
+                {selectedOrder.name || "Menu item details unavailable"}
               </h2>
               <span
-                className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusClassNames[selectedOrder.status]}`}
+                className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusClassNames[selectedOrder.status ?? "unknown"] ?? statusClassNames.unknown}`}
               >
-                {selectedOrder.status}
+                {selectedOrder.status ?? "unknown"}
               </span>
             </div>
 
@@ -329,16 +395,18 @@ export default function VendorCustomerOrders() {
               <div>
                 <dt className="text-xs font-semibold text-[#8B7D72]">Customer</dt>
                 <dd className="mt-1 text-sm font-medium text-[#30231B]">
-                  {selectedOrder.customerName}
+                  {selectedOrder.customerName || "Customer"}
                 </dd>
                 <dd className="mt-0.5 break-all text-xs text-[#75685F]">
-                  {selectedOrder.customerEmail}
+                  {selectedOrder.customerEmail || "Email unavailable"}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs font-semibold text-[#8B7D72]">Total</dt>
                 <dd className="mt-1 text-sm font-bold text-[#B34B31]">
-                  {formatPrice(selectedOrder.price)}
+                  {selectedOrder.price === undefined
+                    ? "Price unavailable"
+                    : formatPrice(selectedOrder.price)}
                 </dd>
               </div>
               <div>
@@ -346,7 +414,7 @@ export default function VendorCustomerOrders() {
                   Delivery date
                 </dt>
                 <dd className="mt-1 text-sm text-[#30231B]">
-                  {selectedOrder.deliveryDate}
+                  {selectedOrder.deliveryDate || "Date unavailable"}
                 </dd>
               </div>
               <div>
@@ -358,7 +426,7 @@ export default function VendorCustomerOrders() {
                     aria-hidden="true"
                     className="mt-0.5 size-4 shrink-0 text-[#B34B31]"
                   />
-                  {selectedOrder.deliveryAddress}
+                  {selectedOrder.deliveryAddress || "Address unavailable"}
                 </dd>
               </div>
               <div className="sm:col-span-2">

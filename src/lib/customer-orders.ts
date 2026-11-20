@@ -1,18 +1,18 @@
 export type CustomerOrder = {
   id: string;
-  menuItemId: string;
+  menuItemId?: string;
   vendorId?: string;
   vendorName?: string;
   customerName?: string;
   customerEmail?: string;
-  name: string;
+  name?: string;
   image?: string;
-  price: number;
-  deliveryDate: string;
-  deliveryAddress: string;
+  price?: number;
+  deliveryDate?: string;
+  deliveryAddress?: string;
   specialInstructions?: string;
   createdAt: string;
-  status?: "pending" | "accepted" | "rejected" | "cancelled";
+  status?: string;
 };
 
 export type NewCustomerOrder = Omit<CustomerOrder, "id" | "createdAt">;
@@ -30,21 +30,19 @@ function isCustomerOrder(value: unknown): value is CustomerOrder {
 
   return (
     typeof order.id === "string" &&
-    typeof order.menuItemId === "string" &&
-    typeof order.name === "string" &&
+    (order.menuItemId === undefined || typeof order.menuItemId === "string") &&
+    (order.name === undefined || typeof order.name === "string") &&
     (order.image === undefined || typeof order.image === "string") &&
-    typeof order.price === "number" &&
-    Number.isFinite(order.price) &&
-    typeof order.deliveryDate === "string" &&
-    typeof order.deliveryAddress === "string" &&
+    (order.price === undefined ||
+      (typeof order.price === "number" && Number.isFinite(order.price))) &&
+    (order.deliveryDate === undefined ||
+      typeof order.deliveryDate === "string") &&
+    (order.deliveryAddress === undefined ||
+      typeof order.deliveryAddress === "string") &&
     (order.specialInstructions === undefined ||
       typeof order.specialInstructions === "string") &&
     typeof order.createdAt === "string" &&
-    (order.status === undefined ||
-      order.status === "pending" ||
-      order.status === "accepted" ||
-    order.status === "rejected" ||
-    order.status === "cancelled")
+    (order.status === undefined || typeof order.status === "string")
   );
 }
 

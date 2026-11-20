@@ -58,13 +58,12 @@ function formatPrice(
 }
 
 const freeFeatures = [
-  "Up to 3 pending, submitted, or active menu items",
+  "Unlimited pending, submitted, and active menu items",
   "ImgBB photo uploads",
   "Customer order management",
 ];
 
 const premiumFeatures = [
-  "Unlimited pending, submitted, and active menu items",
   "ImgBB photo uploads",
   "Customer order management",
   "Subscription managed securely by Stripe",
@@ -154,8 +153,8 @@ export default function VendorSubscription({
           Subscription
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[#75685F]">
-          Compare plans and choose the item limit that fits your restaurant.
-          Premium checkout is handled securely by Stripe.
+          Manage your vendor subscription. Premium checkout is handled
+          securely by Stripe.
         </p>
       </header>
 
@@ -256,7 +255,7 @@ export default function VendorSubscription({
             </span>
           </div>
           <p className="mt-3 text-sm leading-6 text-[#75685F]">
-            Grow your menu without worrying about the item cap.
+            Manage your restaurant&apos;s Premium subscription securely.
           </p>
           <ul className="mt-6 flex-1 space-y-3">
             {premiumFeatures.map((feature) => (

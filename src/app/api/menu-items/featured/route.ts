@@ -13,7 +13,6 @@ export async function GET() {
       price: { $type: "number", $gt: 0 },
     })
     .sort({ createdAt: -1 })
-    .limit(6)
     .toArray();
 
   return Response.json({

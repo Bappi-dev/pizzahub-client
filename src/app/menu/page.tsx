@@ -12,6 +12,7 @@ type MenuItem = {
   location?: string;
   category?: string;
   price: number | string;
+  vendorName?: string;
 };
 
 const isMenuItem = (value: unknown): value is MenuItem => {
@@ -28,7 +29,8 @@ const isMenuItem = (value: unknown): value is MenuItem => {
     typeof item._id === "string" &&
     typeof item.name === "string" &&
     typeof item.itemImage === "string" &&
-    hasValidPrice
+    hasValidPrice &&
+    (item.vendorName === undefined || typeof item.vendorName === "string")
   );
 };
 
@@ -56,38 +58,48 @@ const BrowesMenu = () => {
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("Featured");
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const loadMenu = async () => {
       try {
-        const res = await fetch("http://localhost:5000/menuItems");
-        if (!res.ok) throw new Error("Failed to load menu");
-        const response: unknown = await res.json();
-        if (!Array.isArray(response)) {
-          throw new Error("Menu response must be an array");
+        const response = await fetch("/api/menu-items/public", {
+          signal: controller.signal,
+        });
+        const value: unknown = await response.json();
+        if (!response.ok) {
+          throw new Error("Could not load menu items.");
         }
-
-        const validItems = response.filter(isMenuItem);
+        if (!Array.isArray(value) || !value.every(isMenuItem)) {
+          throw new Error("The server returned invalid menu data.");
+        }
         setMenuData(
-          validItems.map(
-            ({ _id, name, itemImage, location, category, price }) => ({
+          value.map(
+            ({ _id, name, itemImage, location, category, price, vendorName }) => ({
               _id,
               name,
               itemImage,
               location,
               category,
               price,
+              vendorName,
             }),
           ),
         );
-      } catch {
-        setMenuData([]);
+      } catch (error: unknown) {
+        if (controller.signal.aborted) return;
+        setErrorMessage(
+          error instanceof Error ? error.message : "Could not load menu items.",
+        );
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
-    loadMenu();
+    void loadMenu();
+    return () => controller.abort();
   }, []);
 
   const locations = useMemo(
@@ -275,6 +287,10 @@ const BrowesMenu = () => {
         <p className="mt-10 text-center text-sm text-[#777068]">
           Loading menu...
         </p>
+      ) : errorMessage ? (
+        <p role="alert" className="mt-10 text-center text-sm text-red-700">
+          {errorMessage}
+        </p>
       ) : visibleMenu.length > 0 ? (
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visibleMenu.map((data) => (
@@ -287,6 +303,7 @@ const BrowesMenu = () => {
                 location: data.location,
                 category: data.category,
                 price: data.price,
+                vendorName: data.vendorName,
               }}
             />
           ))}

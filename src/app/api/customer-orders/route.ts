@@ -8,18 +8,38 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function serializeOrder(order: Document) {
+  const menuItemId =
+    order.menuItemId instanceof ObjectId
+      ? order.menuItemId.toString()
+      : typeof order.menuItemId === "string"
+        ? order.menuItemId
+        : undefined;
+  const price = Number(order.price);
+  const deliveryDate =
+    order.deliveryDate instanceof Date
+      ? order.deliveryDate.toISOString().slice(0, 10)
+      : typeof order.deliveryDate === "string"
+        ? order.deliveryDate
+        : undefined;
+
   return {
     id: order._id.toString(),
-    menuItemId: order.menuItemId,
-    vendorId: order.vendorId,
-    vendorName: order.vendorName,
-    name: order.name,
-    image: order.image,
-    price: order.price,
-    deliveryDate: order.deliveryDate,
-    deliveryAddress: order.deliveryAddress,
-    specialInstructions: order.specialInstructions,
-    status: order.status,
+    ...(menuItemId ? { menuItemId } : {}),
+    ...(typeof order.vendorId === "string" ? { vendorId: order.vendorId } : {}),
+    ...(typeof order.vendorName === "string"
+      ? { vendorName: order.vendorName }
+      : {}),
+    ...(typeof order.name === "string" ? { name: order.name } : {}),
+    ...(typeof order.image === "string" ? { image: order.image } : {}),
+    ...(Number.isFinite(price) ? { price } : {}),
+    ...(deliveryDate !== undefined ? { deliveryDate } : {}),
+    ...(typeof order.deliveryAddress === "string"
+      ? { deliveryAddress: order.deliveryAddress }
+      : {}),
+    ...(typeof order.specialInstructions === "string"
+      ? { specialInstructions: order.specialInstructions }
+      : {}),
+    ...(typeof order.status === "string" ? { status: order.status } : {}),
     createdAt:
       order.createdAt instanceof Date
         ? order.createdAt.toISOString()

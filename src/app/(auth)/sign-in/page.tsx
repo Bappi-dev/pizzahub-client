@@ -6,14 +6,12 @@ import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Check,
-  Image,
   LockKeyhole,
   Mail,
   Pizza,
-  UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { signIn,} from "@/lib/auth-client";
+import { signIn } from "@/lib/auth-client";
 import { FcGoogle } from "react-icons/fc";
 
 const benefits = [
@@ -25,7 +23,6 @@ const benefits = [
 export default function SignInPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -33,31 +30,21 @@ export default function SignInPage() {
     setErrorMessage(null);
 
     const formData = new FormData(event.currentTarget);
-    const name = String(formData.get("name") ?? "").trim();
-    const image = String(formData.get("image") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
-    const confirmPassword = String(formData.get("confirmPassword") ?? "");
-
-    if (!name) {
-      setErrorMessage("Please enter your name.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorMessage("Your passwords do not match.");
-      return;
-    }
 
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await signIn.email({
+      const { error } = await signIn.email({
         email,
         password,
         callbackURL: "/",
       });
-      console.log(data, error);
+      if (error) {
+        setErrorMessage(error.message ?? "We couldn't sign you in. Check your email and password.");
+        return;
+      }
 
       router.replace("/");
       router.refresh();
@@ -65,7 +52,7 @@ export default function SignInPage() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "We couldn't create your account. Please try again.",
+          : "We couldn't sign you in. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -137,7 +124,7 @@ export default function SignInPage() {
             </span>
           </div>
 
-          <p className="text-sm font-semibold text-orange-700">GET STARTED</p>
+          <p className="text-sm font-semibold text-orange-700">WELCOME BACK</p>
           <h2
             id="signup-heading"
             className="mt-2 text-3xl font-bold tracking-tight text-stone-950"
@@ -145,7 +132,7 @@ export default function SignInPage() {
              Sign In 
           </h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            Join PizzaHub for fresh favorites delivered to your door.
+            Sign in to manage your orders and find your next favorite.
           </p>
 
           {errorMessage && (
@@ -163,7 +150,7 @@ export default function SignInPage() {
             variant="outline"
             size="lg"
             onClick={handleGoogleSignUp}
-            disabled={isSubmitting || isGoogleSubmitting}
+            disabled={isSubmitting}
             className="mt-7 h-12 w-full rounded-xl border-stone-200 bg-white text-stone-800 hover:bg-stone-50"
           >
             <span
@@ -172,15 +159,13 @@ export default function SignInPage() {
             >
              <FcGoogle />
             </span>
-            {isGoogleSubmitting
-              ? "Connecting to Google..."
-              : "Continue with Google"}
+            Continue with Google
           </Button>
 
           <div className="my-6 flex items-center gap-4">
             <span className="h-px flex-1 bg-stone-200" />
             <span className="text-xs font-medium uppercase tracking-wide text-stone-400">
-              or sign up with email
+              or sign in with email
             </span>
             <span className="h-px flex-1 bg-stone-200" />
           </div>
@@ -232,8 +217,8 @@ export default function SignInPage() {
                   id="signup-password"
                   name="password"
                   type="password"
-                  autoComplete="new-password"
-                  placeholder="At least 8 characters"
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
                   required
                   minLength={8}
                   maxLength={128}
@@ -245,10 +230,10 @@ export default function SignInPage() {
             <Button
               type="submit"
               size="lg"
-              disabled={isSubmitting || isGoogleSubmitting}
+              disabled={isSubmitting}
               className="h-12 w-full rounded-xl bg-orange-600 text-base text-white hover:bg-orange-700"
             >
-              {isSubmitting ? "Creating your account..." : "Create account"}
+              {isSubmitting ? "Signing in..." : "Sign in"}
               {!isSubmitting && (
                 <ArrowRight
                   aria-hidden="true"
@@ -260,7 +245,7 @@ export default function SignInPage() {
           </form>
 
           <p className="mt-7 text-center text-sm text-stone-600">
-            Already have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/sign-up"
               className="font-semibold text-orange-700 underline-offset-4 hover:underline"

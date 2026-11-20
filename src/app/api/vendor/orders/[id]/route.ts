@@ -78,3 +78,34 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   return Response.json({ id, status });
 }
+
+export async function DELETE(_request: Request, context: RouteContext) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return Response.json(
+      { error: "Sign in to delete customer orders." },
+      { status: 401 },
+    );
+  }
+  if (session.user.role !== "vendor") {
+    return Response.json(
+      { error: "Only vendors can delete customer orders." },
+      { status: 403 },
+    );
+  }
+
+  const { id } = await context.params;
+  if (!/^[\da-f]{24}$/i.test(id)) {
+    return Response.json({ error: "Order not found." }, { status: 404 });
+  }
+
+  const result = await db.collection("oder").deleteOne({
+    _id: new ObjectId(id),
+    vendorId: session.user.id,
+  });
+  if (result.deletedCount === 0) {
+    return Response.json({ error: "Order not found." }, { status: 404 });
+  }
+
+  return Response.json({ id });
+}

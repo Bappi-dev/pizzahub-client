@@ -193,7 +193,7 @@ export default function CustomerOverview() {
                   <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-[#F1E7DE]">
                     <Image
                       src={order.image}
-                      alt={order.name}
+                      alt={order.name || "Menu item"}
                       fill
                       sizes="56px"
                       className="object-cover"
@@ -210,7 +210,9 @@ export default function CustomerOverview() {
                       {order.name}
                     </h3>
                     <p className="text-sm font-bold text-[#A93422]">
-                      {formatPrice(order.price)}
+                      {order.price === undefined
+                        ? "Price unavailable"
+                        : formatPrice(order.price)}
                     </p>
                   </div>
                   <p className="mt-1 text-xs font-medium text-[#766A60]">

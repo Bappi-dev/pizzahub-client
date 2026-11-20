@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { auth, db } from "@/lib/auth";
+import { getPlan } from "@/lib/vendor-menu";
 
 export async function GET() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -35,6 +36,6 @@ export async function GET() {
     activeItems,
     pendingOrders,
     acceptedOrders,
-    plan: session.user.plan === "premium" ? "premium" : "free",
+    plan: getPlan(session.user),
   });
 }

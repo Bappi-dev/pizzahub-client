@@ -2,11 +2,8 @@ import { ObjectId, type Document } from "mongodb";
 
 import { db, mongoClient } from "@/lib/auth";
 import {
-  freePlanLimit,
   getImgBBImageUrl,
-  getPlan,
   getVendorMenuSession,
-  submittedStatuses,
 } from "@/lib/vendor-menu";
 
 type RouteContext = {
@@ -16,8 +13,7 @@ type RouteContext = {
 type UnknownRecord = Record<string, unknown>;
 
 class MenuItemNotFoundError extends Error {}
-class FreePlanLimitError extends Error {}
-class ItemNotApprovedError extends Error {}
+class RejectedMenuItemError extends Error {}
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null;
@@ -71,7 +67,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     _id: itemId,
     vendorId: result.session.user.id,
   };
-  const plan = getPlan(result.session.user.plan);
 
   if (value.action === "availability") {
     if (typeof value.available !== "boolean") {
@@ -89,30 +84,17 @@ export async function PATCH(request: Request, context: RouteContext) {
             session: mongoSession,
           });
           if (!item) throw new MenuItemNotFoundError();
-          if (isRejected(item) || item.approvalStatus !== "approved") {
-            throw new ItemNotApprovedError();
-          }
-
-          if (
-            nextStatus === "active" &&
-            item.status !== "active" &&
-            plan === "free"
-          ) {
-            const activeCount = await menuCollection.countDocuments(
-              {
-                vendorId: result.session.user.id,
-                status: { $in: submittedStatuses },
-                approvalStatus: { $not: /^rejected$/i },
-                _id: { $ne: itemId },
-              },
-              { session: mongoSession },
-            );
-            if (activeCount >= freePlanLimit) throw new FreePlanLimitError();
-          }
+          if (isRejected(item)) throw new RejectedMenuItemError();
 
           await menuCollection.updateOne(
             ownerFilter,
-            { $set: { status: nextStatus, updatedAt: new Date() } },
+            {
+              $set: {
+                status: nextStatus,
+                ...(value.available ? { approvalStatus: "approved" } : {}),
+                updatedAt: new Date(),
+              },
+            },
             { session: mongoSession },
           );
         });
@@ -121,18 +103,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       if (error instanceof MenuItemNotFoundError) {
         return Response.json({ error: "Menu item not found." }, { status: 404 });
       }
-      if (error instanceof ItemNotApprovedError) {
+      if (error instanceof RejectedMenuItemError) {
         return Response.json(
-          { error: "Only approved items can be made available." },
-          { status: 409 },
-        );
-      }
-      if (error instanceof FreePlanLimitError) {
-        return Response.json(
-          {
-            error:
-              "The Free plan allows up to 3 pending or active items. Upgrade to Premium to activate another item.",
-          },
+          { error: "Rejected items cannot be made available." },
           { status: 409 },
         );
       }
@@ -190,19 +163,6 @@ export async function PATCH(request: Request, context: RouteContext) {
         };
 
         if (isRejected(currentItem)) {
-          if (plan === "free") {
-            const activeCount = await menuCollection.countDocuments(
-              {
-                vendorId: result.session.user.id,
-                status: { $in: submittedStatuses },
-                approvalStatus: { $not: /^rejected$/i },
-                _id: { $ne: itemId },
-              },
-              { session: mongoSession },
-            );
-            if (activeCount >= freePlanLimit) throw new FreePlanLimitError();
-          }
-
           update.status = "pending";
           update.approvalStatus = "pending";
         }
@@ -220,15 +180,6 @@ export async function PATCH(request: Request, context: RouteContext) {
   } catch (error: unknown) {
     if (error instanceof MenuItemNotFoundError) {
       return Response.json({ error: "Menu item not found." }, { status: 404 });
-    }
-    if (error instanceof FreePlanLimitError) {
-      return Response.json(
-        {
-          error:
-            "The Free plan allows up to 3 pending or active items. Remove an item or upgrade to Premium before resubmitting this rejected item.",
-        },
-        { status: 409 },
-      );
     }
     throw error;
   }

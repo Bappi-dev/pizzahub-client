@@ -2,10 +2,17 @@ import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 
-export const freePlanLimit = 3;
 export const submittedStatuses = ["pending", "submitted", "active"];
 
 export function getPlan(value: unknown): "free" | "premium" {
+  if (typeof value === "object" && value !== null) {
+    return (
+      ("subscriptionPlan" in value && value.subscriptionPlan === "premium") ||
+      ("plan" in value && value.plan === "premium")
+    )
+      ? "premium"
+      : "free";
+  }
   return value === "premium" ? "premium" : "free";
 }
 

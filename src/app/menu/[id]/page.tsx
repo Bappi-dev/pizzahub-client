@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { ObjectId } from "mongodb";
 
 import MenuItemsDatelis from "@/components/sheard/MenuItemsDatelis";
+import { db } from "@/lib/auth";
 import { parseMenuItemDetails } from "@/lib/menu-item";
 
 export default function MenuItemPage({
@@ -22,19 +24,19 @@ async function MenuItemDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const response = await fetch(
-    `http://localhost:5000/menuItems/${encodeURIComponent(id)}`,
-    { cache: "no-store" },
-  );
+  if (!/^[\da-f]{24}$/i.test(id)) notFound();
 
-  if (response.status === 404) notFound();
-  if (!response.ok) {
-    throw new Error(`Could not load menu item (${response.status})`);
-  }
+  const menuItem = await db.collection("menu").findOne({
+    _id: new ObjectId(id),
+    approvalStatus: "approved",
+    status: "active",
+  });
+  if (!menuItem) notFound();
 
-  const data: unknown = await response.json();
-  const item = parseMenuItemDetails(data);
-
+  const item = parseMenuItemDetails({
+    ...menuItem,
+    _id: menuItem._id.toString(),
+  });
   if (!item) notFound();
 
   return <MenuItemsDatelis item={item} />;

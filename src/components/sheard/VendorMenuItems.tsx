@@ -390,9 +390,9 @@ export default function VendorMenuItems() {
         </div>
         <div className="flex items-center gap-2 rounded-xl border border-[#E8DED3] bg-white px-4 py-3 text-sm font-semibold text-[#6D5E53] shadow-sm">
           <Pizza aria-hidden="true" className="size-4 text-[#B34B31]" />
-          {planUsage?.plan === "premium"
-            ? `${planUsage.activeItems} items · Premium`
-            : `${planUsage?.activeItems ?? 0}/3 items · Free`}
+          {`${planUsage?.activeItems ?? 0} items · ${
+            planUsage?.plan === "premium" ? "Premium" : "Free"
+          }`}
         </div>
       </header>
 
@@ -448,8 +448,8 @@ export default function VendorMenuItems() {
             const itemState = getItemState(item);
             const isEditing = editingId === item.id && draft !== null;
             const canManageAvailability =
-              item.approvalStatus.toLowerCase() === "approved" &&
-              item.status.toLowerCase() !== "rejected";
+              item.status.toLowerCase() !== "rejected" &&
+              item.approvalStatus.toLowerCase() !== "rejected";
             const isBusy = busyId === item.id || savingId === item.id;
 
             return (

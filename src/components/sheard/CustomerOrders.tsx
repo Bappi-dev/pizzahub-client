@@ -19,14 +19,12 @@ import {
   type CustomerOrder,
 } from "@/lib/customer-orders";
 
-const statusClassNames: Record<
-  NonNullable<CustomerOrder["status"]>,
-  string
-> = {
+const statusClassNames: Record<string, string> = {
   pending: "bg-amber-50 text-amber-800",
   accepted: "bg-green-50 text-green-700",
   rejected: "bg-red-50 text-red-700",
   cancelled: "bg-stone-100 text-stone-700",
+  unknown: "bg-stone-100 text-stone-700",
 };
 
 function getErrorMessage(value: unknown, fallback: string) {
@@ -92,7 +90,9 @@ export default function CustomerOrders() {
   async function cancelOrder(order: CustomerOrder) {
     if (
       order.status !== "pending" ||
-      !window.confirm(`Cancel the pending order for ${order.name}?`)
+      !window.confirm(
+        `Cancel the pending order for ${order.name || "this item"}?`,
+      )
     ) {
       return;
     }
@@ -191,7 +191,7 @@ export default function CustomerOrders() {
       ) : errorMessage ? null : orders.length > 0 ? (
         <div className="space-y-4">
           {orders.map((order) => {
-            const status = order.status || "pending";
+            const status = order.status ?? "unknown";
             return (
               <article
                 key={order.id}
@@ -201,7 +201,7 @@ export default function CustomerOrders() {
                   <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-[#F1E7DE]">
                     <Image
                       src={order.image}
-                      alt={order.name}
+                      alt={order.name || "Menu item"}
                       fill
                       sizes="80px"
                       className="object-cover"
@@ -215,14 +215,16 @@ export default function CustomerOrders() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="font-semibold text-[#281E18]">
-                      {order.name}
+                      {order.name || "Menu item details unavailable"}
                     </h2>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-[#A93422]">
-                        {formatPrice(order.price)}
+                        {order.price === undefined
+                          ? "Price unavailable"
+                          : formatPrice(order.price)}
                       </span>
                       <span
-                        className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusClassNames[status]}`}
+                        className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusClassNames[status] ?? statusClassNames.unknown}`}
                       >
                         {status}
                       </span>
@@ -236,7 +238,7 @@ export default function CustomerOrders() {
                       <span className="font-semibold text-[#4D4037]">
                         Delivery date:
                       </span>{" "}
-                      {order.deliveryDate}
+                      {order.deliveryDate || "Date unavailable"}
                     </p>
                     <p>
                       <span className="font-semibold text-[#4D4037]">
@@ -253,7 +255,7 @@ export default function CustomerOrders() {
                         <span className="font-semibold text-[#4D4037]">
                           Delivery address:
                         </span>{" "}
-                        {order.deliveryAddress}
+                        {order.deliveryAddress || "Address unavailable"}
                       </span>
                     </p>
                     {order.specialInstructions && (

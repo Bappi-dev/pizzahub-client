@@ -33,6 +33,17 @@ function isFeaturedMenuItem(value: unknown): value is FeaturedMenuItem {
   );
 }
 
+function parseFeaturedMenuItems(value: unknown): FeaturedMenuItem[] | null {
+  if (!Array.isArray(value)) return null;
+
+  const items: FeaturedMenuItem[] = [];
+  for (const item of value.slice(0, 6)) {
+    if (!isFeaturedMenuItem(item)) return null;
+    items.push(item);
+  }
+  return items;
+}
+
 function getErrorMessage(value: unknown) {
   if (
     typeof value === "object" &&
@@ -59,25 +70,22 @@ export default function FeaturedMenu() {
       setErrorMessage(null);
 
       try {
-        const response = await fetch("/api/menu-items/featured", {
+        const apiBaseUrl =
+          process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+        const response = await fetch(`${apiBaseUrl}/menuItems`, {
           signal: controller.signal,
         });
         const result: unknown = await response.json();
+        const featuredItems = parseFeaturedMenuItems(result);
 
         if (!response.ok) {
           throw new Error(getErrorMessage(result));
         }
-        if (
-          typeof result !== "object" ||
-          result === null ||
-          !("items" in result) ||
-          !Array.isArray(result.items) ||
-          !result.items.every(isFeaturedMenuItem)
-        ) {
+        if (!featuredItems) {
           throw new Error("The server returned invalid featured menu data.");
         }
 
-        setItems(result.items);
+        setItems(featuredItems);
       } catch (error: unknown) {
         if (controller.signal.aborted) return;
         setErrorMessage(
@@ -103,16 +111,16 @@ export default function FeaturedMenu() {
         <div>
           <p className="mb-2 inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#B34B31]">
             <Pizza aria-hidden="true" className="size-4" />
-            Handpicked for you
+            FROM LOCAL PIZZERIAS
           </p>
           <h2
             id="featured-menu-heading"
             className="font-serif text-3xl font-bold tracking-tight text-[#281E18] sm:text-4xl"
           >
-            Featured Menu Items
+            Menu Items
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-[#75685F] sm:text-base">
-            Discover delicious picks from approved local pizzerias.
+            Browse every approved and available item from local pizzerias.
           </p>
         </div>
         <Button

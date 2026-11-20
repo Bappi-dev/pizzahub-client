@@ -234,9 +234,7 @@ export default function VendorOverview() {
                   {overview.plan}
                 </p>
                 <p className="mt-1 text-xs text-[#8B7D72]">
-                  {overview.plan === "premium"
-                    ? "Unlimited menu items"
-                    : "Up to 3 pending or active items"}
+                  No menu item limit
                 </p>
               </Link>
             </div>

@@ -30,6 +30,7 @@ async function updatePlan(
   const update = await db.collection("user").updateOne(filter, {
     $set: {
       plan,
+      subscriptionPlan: plan,
       stripeSubscriptionId: plan === "premium" ? subscriptionId ?? null : null,
       planUpdatedAt: new Date(),
     },
@@ -64,30 +65,52 @@ async function activateCheckoutSession(
     "premium",
     subscriptionId,
   );
-  if (updated) {
-    const filter = getUserFilter(userId ?? userEmail!, userEmail ?? undefined);
-    const user = await db.collection("user").findOne(filter);
-    await db.collection("transactions").updateOne(
-      { providerId: session.id },
-      {
-        $setOnInsert: {
-          providerId: session.id,
-          vendorName:
-            typeof user?.name === "string" ? user.name : "PizzaHub Vendor",
-          plan: "premium",
-          amount:
-            typeof session.amount_total === "number"
-              ? session.amount_total / 100
-              : 0,
-          currency: session.currency ?? "usd",
-          status: "completed",
-          createdAt: new Date(),
-        },
-      },
-      { upsert: true },
-    );
-  }
   return updated;
+}
+
+async function recordPaidInvoice(
+  stripe: Stripe,
+  invoice: Stripe.Invoice,
+) {
+  if (!invoice.id) return false;
+  const subscriptionDetails = invoice.parent?.subscription_details;
+  if (!subscriptionDetails) return true;
+
+  const subscriptionId =
+    typeof subscriptionDetails.subscription === "string"
+      ? subscriptionDetails.subscription
+      : subscriptionDetails.subscription.id;
+  const metadata =
+    subscriptionDetails.metadata ??
+    (typeof subscriptionDetails.subscription === "string"
+      ? (await stripe.subscriptions.retrieve(subscriptionId)).metadata
+      : subscriptionDetails.subscription.metadata);
+  const userId = metadata.userId ?? null;
+  const userEmail = metadata.userEmail ?? null;
+  if (!userId && !userEmail) return false;
+
+  const filter = getUserFilter(userId ?? userEmail!, userEmail ?? undefined);
+  const user = await db.collection("user").findOne(filter);
+  if (!user) return false;
+
+  await db.collection("transactions").updateOne(
+    { providerId: invoice.id },
+    {
+      $setOnInsert: {
+        providerId: invoice.id,
+        vendorId: userId,
+        vendorName:
+          typeof user.name === "string" ? user.name : "PizzaHub Vendor",
+        plan: "premium",
+        amount: invoice.amount_paid / 100,
+        currency: invoice.currency,
+        status: "completed",
+        createdAt: new Date(invoice.created * 1000),
+      },
+    },
+    { upsert: true },
+  );
+  return true;
 }
 
 async function syncSubscription(subscription: Stripe.Subscription) {
@@ -143,6 +166,11 @@ export async function POST(request: Request) {
   ) {
     updated = await syncSubscription(
       event.data.object as Stripe.Subscription,
+    );
+  } else if (event.type === "invoice.paid") {
+    updated = await recordPaidInvoice(
+      stripe,
+      event.data.object as Stripe.Invoice,
     );
   } else {
     return Response.json({ received: true });

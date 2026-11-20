@@ -3,6 +3,13 @@ import Stripe from "stripe";
 
 import { auth } from "@/lib/auth";
 
+function hasPremiumSubscription(user: {
+  plan?: string | null;
+  subscriptionPlan?: string | null;
+}) {
+  return user.subscriptionPlan === "premium" || user.plan === "premium";
+}
+
 function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   return secretKey ? new Stripe(secretKey) : null;
@@ -33,7 +40,7 @@ export async function GET() {
   const priceId = process.env.STRIPE_PREMIUM_PRICE_ID;
   if (!stripe || !priceId) {
     return Response.json({
-      plan: result.session.user.plan === "premium" ? "premium" : "free",
+      plan: hasPremiumSubscription(result.session.user) ? "premium" : "free",
       premiumPrice: null,
     });
   }
@@ -48,7 +55,7 @@ export async function GET() {
     }
 
     return Response.json({
-      plan: result.session.user.plan === "premium" ? "premium" : "free",
+      plan: hasPremiumSubscription(result.session.user) ? "premium" : "free",
       premiumPrice: {
         amount: price.unit_amount,
         currency: price.currency,
@@ -68,7 +75,7 @@ export async function POST(request: Request) {
   if ("error" in result) {
     return Response.json({ error: result.error }, { status: result.status });
   }
-  if (result.session.user.plan === "premium") {
+  if (hasPremiumSubscription(result.session.user)) {
     return Response.json(
       { error: "Your account already has Premium." },
       { status: 409 },

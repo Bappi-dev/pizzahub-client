@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
   ArrowRight,
   Check,
@@ -97,11 +96,6 @@ export default function VendorWorkspaceForm() {
 
   const isSubmitting = submissionStep !== null;
   const hasPreview = Boolean(imagePreviewUrl) && !imageFailed;
-  const hasReachedFreeLimit =
-    menuPlanUsage?.plan === "free" &&
-    menuPlanUsage.limit !== null &&
-    menuPlanUsage.activeItems >= menuPlanUsage.limit;
-
   useEffect(() => {
     const controller = new AbortController();
 
@@ -235,8 +229,8 @@ export default function VendorWorkspaceForm() {
       }
 
       setMenuPlanUsage(saveResult);
-      toast.success("Menu item submitted for review.", {
-        description: `${itemName.trim()} is pending approval. Its image is hosted on ImgBB.`,
+      toast.success("Menu item added.", {
+        description: `${itemName.trim()} is now available to customers. Its image is hosted on ImgBB.`,
       });
       form.reset();
       setItemName("");
@@ -287,9 +281,8 @@ export default function VendorWorkspaceForm() {
             {menuPlanUsage?.plan === "premium" ? "Premium plan" : "Free plan"}
           </p>
           <p className="mt-1 text-xs leading-5 text-[#75685F]">
-            {menuPlanUsage?.plan === "premium"
-              ? "Unlimited menu items."
-              : "Pending and active items count toward your 3-item limit."}
+            No limit on menu items. New items are visible to customers after
+            approval.
           </p>
           {planUsageError && (
             <p role="alert" className="mt-1 text-xs text-red-700">
@@ -300,23 +293,8 @@ export default function VendorWorkspaceForm() {
         <p className="text-sm font-semibold text-[#A4442F]">
           {isLoadingPlanUsage
             ? "Checking plan..."
-            : menuPlanUsage?.plan === "premium"
-              ? `${menuPlanUsage.activeItems} items submitted`
-              : `${menuPlanUsage?.activeItems ?? 0}/3 items used`}
+            : `${menuPlanUsage?.activeItems ?? 0} items submitted`}
         </p>
-        {hasReachedFreeLimit && (
-          <div className="flex flex-wrap items-center gap-3">
-            <p role="alert" className="text-sm font-semibold text-red-700">
-              Free plan limit reached.
-            </p>
-            <Link
-              href="/dashboard/vendor/subscription"
-              className="text-sm font-bold text-[#A4442F] underline underline-offset-4 hover:text-[#7E2D20]"
-            >
-              Upgrade to Premium
-            </Link>
-          </div>
-        )}
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
@@ -513,9 +491,7 @@ export default function VendorWorkspaceForm() {
             <Button
               type="submit"
               size="lg"
-              disabled={
-                isSubmitting || isLoadingPlanUsage || hasReachedFreeLimit
-              }
+              disabled={isSubmitting || isLoadingPlanUsage}
               className="h-12 rounded-xl bg-[#B34B31] px-6 text-sm font-bold text-white shadow-[0_10px_24px_-12px_rgba(179,75,49,0.75)] transition hover:bg-[#963D29]"
             >
               {isSubmitting ? (

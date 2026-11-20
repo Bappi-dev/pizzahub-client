@@ -26,7 +26,10 @@ function serializeUser(user: Document) {
     name: typeof user.name === "string" ? user.name : "Unknown user",
     email: typeof user.email === "string" ? user.email : "",
     role: typeof user.role === "string" ? user.role : "customer",
-    plan: typeof user.plan === "string" ? user.plan : "free",
+    plan:
+      user.subscriptionPlan === "premium" || user.plan === "premium"
+        ? "premium"
+        : "free",
     blocked: Boolean(user.blocked),
     createdAt: serializeDate(user.createdAt),
   };
