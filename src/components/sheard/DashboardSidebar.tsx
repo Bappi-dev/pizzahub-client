@@ -10,6 +10,8 @@ import {
   ListOrdered,
   LogOut,
   PlusCircle,
+  ReceiptText,
+  Utensils,
   UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -87,10 +89,22 @@ const roleBasedSidebarItem: Record<DashboardRole, NavItem[]> = {
       icon: LayoutDashboard,
     },
     {
-      id: "admin-orders",
-      title: "My Orders",
-      href: "/dashboard/orders",
-      icon: ListOrdered,
+      id: "admin-users",
+      title: "Manage Users",
+      href: "/dashboard/admin#users",
+      icon: UserRound,
+    },
+    {
+      id: "admin-menu",
+      title: "Manage Menu Items",
+      href: "/dashboard/admin#menu",
+      icon: Utensils,
+    },
+    {
+      id: "admin-transactions",
+      title: "Transactions",
+      href: "/dashboard/admin#transactions",
+      icon: ReceiptText,
     },
     {
       id: "admin-profile",
@@ -117,7 +131,7 @@ const DashboardSidebar = () => {
   const navigationItems = roleBasedSidebarItem[role];
 
   const isActive = (href: string) => {
-    const cleanHref = href === "/" ? "/" : href.replace(/\/+$/, "");
+    const cleanHref = (href === "/" ? "/" : href.split("#")[0]).replace(/\/+$/, "");
     if (cleanHref === "/") return pathname === "/";
     return (
       pathname === cleanHref ||

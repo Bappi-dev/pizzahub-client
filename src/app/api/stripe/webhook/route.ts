@@ -58,7 +58,36 @@ async function activateCheckoutSession(
       ? session.subscription
       : session.subscription?.id;
 
-  return updatePlan(userId, userEmail, "premium", subscriptionId);
+  const updated = await updatePlan(
+    userId,
+    userEmail,
+    "premium",
+    subscriptionId,
+  );
+  if (updated) {
+    const filter = getUserFilter(userId ?? userEmail!, userEmail ?? undefined);
+    const user = await db.collection("user").findOne(filter);
+    await db.collection("transactions").updateOne(
+      { providerId: session.id },
+      {
+        $setOnInsert: {
+          providerId: session.id,
+          vendorName:
+            typeof user?.name === "string" ? user.name : "PizzaHub Vendor",
+          plan: "premium",
+          amount:
+            typeof session.amount_total === "number"
+              ? session.amount_total / 100
+              : 0,
+          currency: session.currency ?? "usd",
+          status: "completed",
+          createdAt: new Date(),
+        },
+      },
+      { upsert: true },
+    );
+  }
+  return updated;
 }
 
 async function syncSubscription(subscription: Stripe.Subscription) {

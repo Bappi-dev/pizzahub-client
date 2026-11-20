@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import DashboardSidebar from "@/components/sheard/DashboardSidebar";
 
+export const instant = false;
+
 export default function DashboardLayout({
   children,
 }: {
