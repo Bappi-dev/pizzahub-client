@@ -22,6 +22,9 @@ export async function POST(request: Request) {
   if (!session) {
     return Response.json({ error: "Sign in to upload a menu image." }, { status: 401 });
   }
+  if (session.user.blocked === true) {
+    return Response.json({ error: "This account is blocked." }, { status: 403 });
+  }
 
   if (session.user.role !== "vendor") {
     return Response.json(

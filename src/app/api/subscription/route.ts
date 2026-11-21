@@ -20,6 +20,9 @@ async function getVendorSession() {
   if (!session) {
     return { error: "Sign in to manage your subscription.", status: 401 as const };
   }
+  if (session.user.blocked === true) {
+    return { error: "This account is blocked.", status: 403 as const };
+  }
   if (session.user.role !== "vendor") {
     return {
       error: "Only vendors can manage a subscription.",
@@ -112,11 +115,11 @@ export async function POST(request: Request) {
         },
       },
       success_url: new URL(
-        "/dashboard/vendor/subscription?checkout=success",
+        "/payment/success",
         baseUrl,
       ).toString(),
       cancel_url: new URL(
-        "/dashboard/vendor/subscription?checkout=cancelled",
+        "/payment/cancel",
         baseUrl,
       ).toString(),
     });

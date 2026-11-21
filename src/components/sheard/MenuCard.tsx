@@ -13,6 +13,7 @@ type MenuItem = {
   category?: string;
   price: number | string;
   vendorName?: string;
+  premium?: boolean;
 };
 
 type MenuCardProps = {
@@ -20,7 +21,7 @@ type MenuCardProps = {
 };
 
 const MenuCard = ({ menu }: MenuCardProps) => {
-  const { _id, itemImage, location, category, price, name, vendorName } = menu;
+  const { _id, itemImage, location, category, price, name, vendorName, premium } = menu;
   const formattedPrice =
     typeof price === "number" ? `$${price.toFixed(2)}` : price;
 
@@ -44,6 +45,11 @@ const MenuCard = ({ menu }: MenuCardProps) => {
         {category && (
           <span className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#B34B31] shadow-sm backdrop-blur">
             {category}
+          </span>
+        )}
+        {premium && (
+          <span className="absolute right-3 top-3 rounded-full border border-white/70 bg-orange-600 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white shadow-sm">
+            Premium
           </span>
         )}
       </div>

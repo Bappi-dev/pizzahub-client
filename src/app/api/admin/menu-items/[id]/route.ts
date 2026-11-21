@@ -8,6 +8,9 @@ type RouteContext = { params: Promise<{ id: string }> };
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return { error: "Sign in to manage menu items.", status: 401 as const };
+  if (session.user.blocked === true) {
+    return { error: "This account is blocked.", status: 403 as const };
+  }
   if (session.user.role !== "admin") {
     return { error: "Only admins can manage menu items.", status: 403 as const };
   }

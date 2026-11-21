@@ -88,12 +88,7 @@ export default function CustomerOrders() {
   }, [reloadKey]);
 
   async function cancelOrder(order: CustomerOrder) {
-    if (
-      order.status !== "pending" ||
-      !window.confirm(
-        `Cancel the pending order for ${order.name || "this item"}?`,
-      )
-    ) {
+    if (order.status !== "pending") {
       return;
     }
 
@@ -266,6 +261,29 @@ export default function CustomerOrders() {
                         {order.specialInstructions}
                       </p>
                     )}
+                    <div className="sm:col-span-2">
+                      <p className="mb-2 font-semibold text-[#4D4037]">Order timeline</p>
+                      <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                        {["pending", "accepted", "rejected", "cancelled"].map((step) => {
+                          const reached =
+                            step === "pending"
+                              ? true
+                              : status === step;
+                          return (
+                            <span
+                              key={step}
+                              className={`rounded-full px-2.5 py-1 capitalize ${
+                                reached
+                                  ? statusClassNames[step]
+                                  : "bg-stone-50 text-stone-400"
+                              }`}
+                            >
+                              {step}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
                 {status === "pending" && (

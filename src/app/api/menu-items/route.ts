@@ -3,7 +3,6 @@ import {
   getImgBBImageUrl,
   getPlan,
   getVendorMenuSession,
-  submittedStatuses,
 } from "@/lib/vendor-menu";
 
 type UnknownRecord = Record<string, unknown>;
@@ -24,8 +23,8 @@ export async function GET() {
   const plan = getPlan(result.session.user);
   const itemFilter = {
     vendorId: result.session.user.id,
-    status: { $in: submittedStatuses },
-    approvalStatus: { $not: /^rejected$/i },
+    status: "active",
+    approvalStatus: "approved",
   };
   const [activeItems, items] = await Promise.all([
     db.collection("menu").countDocuments(itemFilter),
@@ -39,7 +38,7 @@ export async function GET() {
   return Response.json({
     plan,
     activeItems,
-    limit: null,
+    limit: plan === "premium" ? null : 3,
     items: items.map((item) => ({
       id: item._id.toString(),
       name: item.name,
@@ -78,6 +77,8 @@ export async function POST(request: Request) {
     typeof value.category === "string" ? value.category.trim() : "";
   const location =
     typeof value.location === "string" ? value.location.trim() : "";
+  const description =
+    typeof value.description === "string" ? value.description.trim() : "";
   const itemImage = getImgBBImageUrl(value.itemImage);
   const price = value.price;
 
@@ -87,13 +88,15 @@ export async function POST(request: Request) {
     !category ||
     !location ||
     location.length > 120 ||
+    !description ||
+    description.length > 500 ||
     !itemImage ||
     typeof price !== "number" ||
     !Number.isFinite(price) ||
     price <= 0
   ) {
     return Response.json(
-      { error: "Check the image, name, category, price, and location." },
+      { error: "Check the image, name, description, category, price, and location." },
       { status: 400 },
     );
   }
@@ -102,47 +105,65 @@ export async function POST(request: Request) {
   const menuCollection = db.collection("menu");
   const itemFilter = {
     vendorId: result.session.user.id,
-    status: { $in: submittedStatuses },
-    approvalStatus: { $not: /^rejected$/i },
+    status: "active",
+    approvalStatus: "approved",
   };
   let activeItems = 0;
   let itemId = "";
 
-  await mongoClient.withSession(async (mongoSession) => {
-    await mongoSession.withTransaction(async () => {
-      const currentCount = await menuCollection.countDocuments(itemFilter, {
-        session: mongoSession,
+  try {
+    await mongoClient.withSession(async (mongoSession) => {
+      await mongoSession.withTransaction(async () => {
+        const currentCount = await menuCollection.countDocuments(itemFilter, {
+          session: mongoSession,
+        });
+        if (plan === "free" && currentCount >= 3) {
+          throw new Error("FREE_PLAN_LIMIT");
+        }
+
+        const inserted = await menuCollection.insertOne(
+          {
+            itemImage,
+            name,
+            category,
+            price,
+            location,
+            description,
+            vendorId: result.session.user.id,
+            vendorName: result.session.user.name,
+            status: "pending",
+            approvalStatus: "pending",
+            createdAt: new Date(),
+          },
+          { session: mongoSession },
+        );
+
+        itemId = inserted.insertedId.toString();
+        activeItems = currentCount;
       });
-
-      const inserted = await menuCollection.insertOne(
-        {
-          itemImage,
-          name,
-          category,
-          price,
-          location,
-          vendorId: result.session.user.id,
-          vendorName: result.session.user.name,
-          status: "active",
-          approvalStatus: "approved",
-          createdAt: new Date(),
-        },
-        { session: mongoSession },
-      );
-
-      itemId = inserted.insertedId.toString();
-      activeItems = currentCount + 1;
     });
-  });
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === "FREE_PLAN_LIMIT") {
+      return Response.json(
+        {
+          error:
+            "Free plan allows up to 3 active menu items. Upgrade to Premium for unlimited active items.",
+        },
+        { status: 409 },
+      );
+    }
+    throw error;
+  }
 
   return Response.json(
-    {
-      itemId,
-      status: "active",
-      plan,
-      activeItems,
-      limit: null,
-    },
-    { status: 201 },
+  {
+    itemId,
+    status: "pending",
+    approvalStatus: "pending",
+    plan,
+    activeItems: activeItems,
+    limit: plan === "premium" ? null : 3,
+  },
+  { status: 201 },
   );
 }

@@ -1,10 +1,12 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ObjectId } from "mongodb";
 
 import MenuItemsDatelis from "@/components/sheard/MenuItemsDatelis";
 import { db } from "@/lib/auth";
 import { parseMenuItemDetails } from "@/lib/menu-item";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export default function MenuItemPage({
   params,
@@ -25,6 +27,8 @@ async function MenuItemDetailsPage({
 }) {
   const { id } = await params;
   if (!/^[\da-f]{24}$/i.test(id)) notFound();
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect("/sign-in");
 
   const menuItem = await db.collection("menu").findOne({
     _id: new ObjectId(id),

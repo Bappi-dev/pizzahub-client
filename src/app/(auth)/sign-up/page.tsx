@@ -38,9 +38,25 @@ export default function SignUpPage() {
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
     const confirmPassword = String(formData.get("confirmPassword") ?? "");
+    const role = String(formData.get("role") ?? "");
 
     if (!name) {
       setErrorMessage("Please enter your name.");
+      return;
+    }
+    if (role !== "vendor" && role !== "customer") {
+      setErrorMessage("Choose Customer or Vendor as your account role.");
+      return;
+    }
+    if (
+      password.length < 6 ||
+      password.length > 128 ||
+      !/[A-Z]/.test(password) ||
+      !/[a-z]/.test(password)
+    ) {
+      setErrorMessage(
+        "Password must be 6-128 characters and include one uppercase and one lowercase letter.",
+      );
       return;
     }
 
@@ -59,9 +75,31 @@ export default function SignUpPage() {
         password,
         callbackURL: "/",
       });
-      console.log(data, error);
+      if (error) {
+        setErrorMessage(error.message ?? "We couldn't create your account.");
+        return;
+      }
+      if (data) {
+        const roleResponse = await fetch("/api/profile/role", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role }),
+        });
+        if (!roleResponse.ok) {
+          const value: unknown = await roleResponse.json();
+          setErrorMessage(
+            typeof value === "object" &&
+              value !== null &&
+              "error" in value &&
+              typeof value.error === "string"
+              ? value.error
+              : "Account created, but role setup failed.",
+          );
+          return;
+        }
+      }
 
-      router.replace("/");
+      router.replace(role === "vendor" ? "/dashboard/vendor" : "/dashboard/customer");
       router.refresh();
     } catch (error: unknown) {
       setErrorMessage(
@@ -192,6 +230,28 @@ export default function SignUpPage() {
             onSubmit={handleSubmit}
             aria-busy={isSubmitting}
           >
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium text-stone-800">
+                Account role
+              </legend>
+              <div className="grid grid-cols-2 gap-3">
+                {(["customer", "vendor"] as const).map((role) => (
+                  <label
+                    key={role}
+                    className="flex cursor-pointer items-center gap-2 rounded-xl border border-stone-200 px-3 py-3 text-sm capitalize text-stone-700"
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value={role}
+                      required
+                      className="accent-orange-600"
+                    />
+                    {role}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
             <div className="space-y-2">
               <label
                 htmlFor="signup-name"
@@ -281,9 +341,9 @@ export default function SignUpPage() {
                   name="password"
                   type="password"
                   autoComplete="new-password"
-                  placeholder="At least 8 characters"
+                  placeholder="At least 6 characters"
                   required
-                  minLength={8}
+                  minLength={6}
                   maxLength={128}
                   className="h-12 w-full rounded-xl border border-stone-200 bg-white pl-11 pr-4 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
                 />
@@ -309,7 +369,7 @@ export default function SignUpPage() {
                   autoComplete="new-password"
                   placeholder="Re-enter your password"
                   required
-                  minLength={8}
+                  minLength={6}
                   maxLength={128}
                   className="h-12 w-full rounded-xl border border-stone-200 bg-white pl-11 pr-4 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
                 />

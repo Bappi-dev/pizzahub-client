@@ -15,6 +15,9 @@ export async function PATCH(_request: Request, context: RouteContext) {
       { status: 401 },
     );
   }
+  if (session.user.blocked === true) {
+    return Response.json({ error: "This account is blocked." }, { status: 403 });
+  }
   if (session.user.role !== "customer") {
     return Response.json(
       { error: "Only customers can cancel customer orders." },

@@ -15,6 +15,7 @@ type FeaturedMenuItem = {
   price: number;
   location: string;
   vendorName: string;
+  premium?: boolean;
 };
 
 function isFeaturedMenuItem(value: unknown): value is FeaturedMenuItem {
@@ -30,6 +31,8 @@ function isFeaturedMenuItem(value: unknown): value is FeaturedMenuItem {
     Number.isFinite(item.price) &&
     typeof item.location === "string" &&
     typeof item.vendorName === "string"
+    &&
+    (item.premium === undefined || typeof item.premium === "boolean")
   );
 }
 
@@ -163,7 +166,7 @@ export default function FeaturedMenu() {
       ) : items.length ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => (
-            <MenuCard key={item._id} menu={item} />
+            <MenuCard key={item._id} menu={{ ...item, premium: item.premium }} />
           ))}
         </div>
       ) : (

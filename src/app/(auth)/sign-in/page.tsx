@@ -36,7 +36,7 @@ export default function SignInPage() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await signIn.email({
+      const { data, error } = await signIn.email({
         email,
         password,
         callbackURL: "/",
@@ -46,7 +46,15 @@ export default function SignInPage() {
         return;
       }
 
-      router.replace("/");
+      const role =
+        typeof data?.user?.role === "string" ? data.user.role : "customer";
+      router.replace(
+        role === "vendor"
+          ? "/dashboard/vendor"
+          : role === "admin"
+            ? "/dashboard/admin"
+            : "/dashboard/customer",
+      );
       router.refresh();
     } catch (error: unknown) {
       setErrorMessage(

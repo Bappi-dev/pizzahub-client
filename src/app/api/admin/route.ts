@@ -14,6 +14,9 @@ async function requireAdmin() {
   if (!session) {
     return { error: "Sign in to access the admin dashboard.", status: 401 as const };
   }
+  if (session.user.blocked === true) {
+    return { error: "This account is blocked.", status: 403 as const };
+  }
   if (session.user.role !== "admin") {
     return { error: "Only admins can access this workspace.", status: 403 as const };
   }

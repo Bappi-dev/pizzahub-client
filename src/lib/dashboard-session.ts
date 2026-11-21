@@ -7,6 +7,7 @@ export async function getCurrentDashboardRole() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) return null;
+  if (session.user.blocked === true) return null;
 
   return isDashboardRole(session.user.role) ? session.user.role : "customer";
 }

@@ -150,12 +150,31 @@ export default function AdminDashboard() {
     try {
       const apiBaseUrl =
         process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+      const tokenResponse = await fetch(`${apiBaseUrl}/api/auth/token`, {
+        credentials: "include",
+      });
+      const tokenValue: unknown = await tokenResponse.json();
+      if (!tokenResponse.ok) {
+        throw new Error(getError(tokenValue, "Could not authenticate request."));
+      }
+      if (
+        typeof tokenValue !== "object" ||
+        tokenValue === null ||
+        !("token" in tokenValue) ||
+        typeof tokenValue.token !== "string"
+      ) {
+        throw new Error("The server returned an invalid access token.");
+      }
+
       const response = await fetch(
         `${apiBaseUrl}/api/admin/users/${encodeURIComponent(user.id)}`,
         {
           method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          credentials: "omit",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokenValue.token}`,
+          },
           body: JSON.stringify({ blocked: !user.blocked }),
         },
       );

@@ -15,6 +15,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       { status: 401 },
     );
   }
+  if (session.user.blocked === true) {
+    return Response.json({ error: "This account is blocked." }, { status: 403 });
+  }
   if (session.user.role !== "vendor") {
     return Response.json(
       { error: "Only vendors can update customer orders." },
@@ -86,6 +89,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
       { error: "Sign in to delete customer orders." },
       { status: 401 },
     );
+  }
+  if (session.user.blocked === true) {
+    return Response.json({ error: "This account is blocked." }, { status: 403 });
   }
   if (session.user.role !== "vendor") {
     return Response.json(

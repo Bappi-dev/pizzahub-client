@@ -22,6 +22,7 @@ async function updatePlan(
   userEmail: string | null,
   plan: "free" | "premium",
   subscriptionId?: string,
+  expiresAt?: Date | null,
 ) {
   if (!userId && !userEmail) return false;
 
@@ -32,6 +33,7 @@ async function updatePlan(
       plan,
       subscriptionPlan: plan,
       stripeSubscriptionId: plan === "premium" ? subscriptionId ?? null : null,
+      subscriptionExpiresAt: expiresAt ?? null,
       planUpdatedAt: new Date(),
     },
   });
@@ -121,7 +123,15 @@ async function syncSubscription(subscription: Stripe.Subscription) {
       ? "premium"
       : "free";
 
-  return updatePlan(userId, userEmail, plan, subscription.id);
+  const expiresAt =
+    typeof subscription.cancel_at === "number"
+      ? new Date(subscription.cancel_at * 1000)
+      : typeof subscription.ended_at === "number"
+        ? new Date(subscription.ended_at * 1000)
+        : plan === "premium"
+          ? null
+          : new Date();
+  return updatePlan(userId, userEmail, plan, subscription.id, expiresAt);
 }
 
 export async function POST(request: Request) {

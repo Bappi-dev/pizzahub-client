@@ -52,6 +52,12 @@ async function getCustomerSession() {
   if (!session) {
     return { error: "Sign in to view your orders.", status: 401 as const };
   }
+  if (session.user.blocked === true) {
+    return {
+      error: "This account is blocked.",
+      status: 403 as const,
+    };
+  }
   if (session.user.role !== "customer") {
     return {
       error: "Only customer accounts can access customer orders.",
@@ -132,6 +138,12 @@ export async function POST(request: Request) {
     return Response.json(
       { error: "This menu item is missing its restaurant details." },
       { status: 409 },
+    );
+  }
+  if (item.vendorId === result.session.user.id) {
+    return Response.json(
+      { error: "You cannot order an item from your own restaurant." },
+      { status: 403 },
     );
   }
 

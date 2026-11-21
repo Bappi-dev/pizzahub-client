@@ -13,6 +13,7 @@ type MenuItem = {
   category?: string;
   price: number | string;
   vendorName?: string;
+  premium?: boolean;
 };
 
 const isMenuItem = (value: unknown): value is MenuItem => {
@@ -61,11 +62,25 @@ const BrowesMenu = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const categoryParam = params.get("category");
+    if (categoryParam && categories.includes(categoryParam)) {
+      queueMicrotask(() => setCategory(categoryParam));
+    }
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
+    const params = new URLSearchParams();
+    if (search.trim()) params.set("search", search.trim());
+    if (category !== "All") params.set("category", category);
+    if (location !== "All locations") params.set("location", location);
+    if (sort === "Price: Low to High") params.set("sort", "price-asc");
+    if (sort === "Price: High to Low") params.set("sort", "price-desc");
 
     const loadMenu = async () => {
       try {
-        const response = await fetch("/api/menu-items/public", {
+        const response = await fetch(`/api/menu-items/public${params.size ? `?${params}` : ""}`, {
           signal: controller.signal,
         });
         const value: unknown = await response.json();
@@ -77,7 +92,7 @@ const BrowesMenu = () => {
         }
         setMenuData(
           value.map(
-            ({ _id, name, itemImage, location, category, price, vendorName }) => ({
+            ({ _id, name, itemImage, location, category, price, vendorName, premium }) => ({
               _id,
               name,
               itemImage,
@@ -85,6 +100,7 @@ const BrowesMenu = () => {
               category,
               price,
               vendorName,
+              premium: premium === true,
             }),
           ),
         );
@@ -100,7 +116,7 @@ const BrowesMenu = () => {
 
     void loadMenu();
     return () => controller.abort();
-  }, []);
+  }, [category, location, search, sort]);
 
   const locations = useMemo(
     () =>
@@ -304,6 +320,7 @@ const BrowesMenu = () => {
                 category: data.category,
                 price: data.price,
                 vendorName: data.vendorName,
+                premium: "premium" in data ? Boolean(data.premium) : false,
               }}
             />
           ))}

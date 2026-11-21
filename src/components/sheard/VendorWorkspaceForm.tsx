@@ -85,6 +85,7 @@ export default function VendorWorkspaceForm() {
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
   const [submissionStep, setSubmissionStep] = useState<
     "uploading" | "saving" | null
   >(null);
@@ -205,6 +206,7 @@ export default function VendorWorkspaceForm() {
           category,
           price: Number(price),
           location: location.trim(),
+          description: description.trim(),
         }),
       });
 
@@ -238,6 +240,8 @@ export default function VendorWorkspaceForm() {
       setCategory("");
       setPrice("");
       setLocation("");
+      setDescription("");
+      setDescription("");
     } catch (error: unknown) {
       toast.error(
         error instanceof Error
@@ -481,6 +485,26 @@ export default function VendorWorkspaceForm() {
               <p className="text-xs leading-5 text-[#8B7D72]">
                 Add the neighborhood and city so nearby customers can find you.
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="item-description"
+                className="text-sm font-semibold text-[#44382F]"
+              >
+                Description <span className="text-[#B34B31]">*</span>
+              </label>
+              <textarea
+                id="item-description"
+                name="description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="Describe ingredients, flavor, and what makes this item special..."
+                required
+                maxLength={500}
+                rows={4}
+                className={`${inputClassName} h-auto py-3 resize-y`}
+              />
             </div>
           </div>
 
