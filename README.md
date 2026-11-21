@@ -82,6 +82,17 @@ Example:
 5. Resource ownership and role checks run after JWT/session validation.
 6. Invalid or expired JWTs return `401`; forbidden users return `403`.
 
+## Google OAuth setup
+
+Add this exact authorized redirect URI to the Google OAuth web client:
+
+```text
+https://pizzahub-client-iota.vercel.app/api/auth/callback/google
+```
+
+Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in Vercel production
+environment variables, then redeploy after changing them.
+
 ## Stripe webhook flow
 
 Configure the webhook endpoint as `/api/stripe/webhook` and enable the relevant

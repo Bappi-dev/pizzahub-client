@@ -10,6 +10,13 @@ export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client: mongoClient,
   }),
+  baseURL:
+    process.env.BETTER_AUTH_URL ??
+    "https://pizzahub-client-iota.vercel.app",
+  trustedOrigins: [
+    "https://pizzahub-client-iota.vercel.app",
+    "http://localhost:3000",
+  ],
   emailAndPassword: {
     enabled: true,
   },
