@@ -96,7 +96,8 @@ future expiry date and a valid CVC.
 
 ## Live and repository links
 
-- Live site: `https://ADD_DEPLOYED_URL`
+- Live site: `https://pizzahub-client-iota.vercel.app`
+- API server: `https://pizzahub-server-beige.vercel.app`
 - Client repository: `https://github.com/Bappi-dev/pizzahub-client`
 - Server repository: `https://github.com/Bappi-dev/pizzahub-server`
 

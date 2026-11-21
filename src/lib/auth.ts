@@ -3,6 +3,7 @@ import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 
 export const mongoClient = new MongoClient(process.env.DB_URI as string);
+await mongoClient.connect();
 export const db = mongoClient.db("Pizzahub");
 
 export const auth = betterAuth({
