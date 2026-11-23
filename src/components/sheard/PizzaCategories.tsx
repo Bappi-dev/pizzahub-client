@@ -79,7 +79,7 @@ const PizzaCategories = () => {
               >
                 <span
                   aria-hidden="true"
-                  className="absolute -right-10 -top-12 size-36 rounded-full bg-[#F4E5D6]/70 transition-all duration-500 group-hover:scale-125 group-hover:bg-cyan-300/10 dark:bg-cyan-300/[0.08]"
+                  className="absolute -right-10 -top-12 size-36 rounded-full bg-[#F4E5D6]/70 transition-all duration-500 group-hover:scale-125 "
                 />
                 <div className="relative z-10 flex w-full flex-col">
                   <div className="flex items-start justify-between gap-4">

@@ -49,12 +49,12 @@ export default function Tostify() {
               className="size-4 transition-transform group-hover:translate-x-1"
             />
           </Link>
-          <a
-            href="mailto:hello@pizzahub.com?subject=Pizzeria%20partnership"
+          <Link
+            href="/menu"
             className="inline-flex h-11 items-center justify-center rounded-xl border border-white/40 px-5 text-sm font-bold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#AD3F2D]"
           >
             I&apos;m a pizzeria
-          </a>
+          </Link>
         </div>
       </motion.div>
     </section>
