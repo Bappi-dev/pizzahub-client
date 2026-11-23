@@ -75,20 +75,20 @@ const PizzaCategories = () => {
             <li key={name}>
               <Link
                 href={`/menu?category=${encodeURIComponent(name)}`}
-                className="group relative hover:border-cyan-300 flex min-h-44 overflow-hidden rounded-2xl border border-[#E6D8CA] bg-[#FFFAF5] p-5 shadow-[0_12px_32px_-28px_rgba(67,43,28,0.55)] transition duration-300 hover:-translate-y-1  hover:shadow-[0_20px_40px_-24px_rgba(67,43,28,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B34B31] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4ECE3]"
+                className="group relative flex min-h-44 overflow-hidden rounded-2xl border border-[#E6D8CA] bg-[#FFFAF5] p-5 shadow-[0_12px_32px_-28px_rgba(67,43,28,0.55)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-cyan-300 hover:shadow-[0_18px_38px_-20px_rgba(8,145,178,0.28)] dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.8)] dark:hover:border-cyan-200 dark:hover:bg-white/[0.09] dark:hover:shadow-[0_18px_38px_-18px_rgba(34,211,238,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4ECE3] dark:focus-visible:ring-offset-[#1B1C1E]"
               >
                 <span
                   aria-hidden="true"
-                  className="absolute -right-10 -top-12 size-36 rounded-full bg-[#F4E5D6]/70 transition-transform duration-500 group-hover:scale-125"
+                  className="absolute -right-10 -top-12 size-36 rounded-full bg-[#F4E5D6]/70 transition-all duration-500 group-hover:scale-125 group-hover:bg-cyan-300/10 dark:bg-cyan-300/[0.08]"
                 />
                 <div className="relative z-10 flex w-full flex-col">
                   <div className="flex items-start justify-between gap-4">
                     <span
-                      className={`grid size-12 place-items-center rounded-2xl ${accent} transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105`}
+                      className={`grid size-12 place-items-center rounded-2xl ${accent} ring-1 ring-black/[0.03] transition-all duration-300 group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-lg dark:ring-white/10`}
                     >
                       <Icon aria-hidden="true" className="size-5" strokeWidth={2} />
                     </span>
-                    <span className="grid size-9 place-items-center rounded-full border border-[#E6D8CA] bg-white/80 text-[#4A3B31] transition duration-300 group-hover:border-[#B34B31] group-hover:bg-[#B34B31] group-hover:text-white">
+                    <span className="grid size-9 place-items-center rounded-full border border-[#E6D8CA] bg-white/80 text-[#4A3B31] transition-all duration-300 group-hover:border-cyan-400 group-hover:bg-cyan-400 group-hover:text-cyan-950 dark:border-white/10 dark:bg-white/[0.08] dark:text-zinc-200 dark:group-hover:border-cyan-200 dark:group-hover:bg-cyan-200">
                       <ArrowUpRight
                         aria-hidden="true"
                         className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
