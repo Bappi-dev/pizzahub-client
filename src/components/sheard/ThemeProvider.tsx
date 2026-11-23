@@ -1,0 +1,20 @@
+"use client";
+
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+
+type ThemeProviderProps = React.ComponentProps<typeof NextThemesProvider>;
+
+export default function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+      storageKey="pizzahub-theme"
+      {...props}
+    >
+      {children}
+    </NextThemesProvider>
+  );
+}
