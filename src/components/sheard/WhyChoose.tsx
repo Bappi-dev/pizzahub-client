@@ -94,7 +94,7 @@ export default function WhyChoose() {
                 duration: reduceMotion ? 0 : 0.45,
                 ease: "easeOut",
               }}
-              className="rounded-2xl border border-[#E8DED3] bg-white p-5 shadow-[0_12px_30px_-24px_rgba(67,43,28,0.38)] transition-colors hover:border-[#D8C2AF] sm:p-6"
+              className="rounded-2xl border border-[#E8DED3] hover:border-violet-400 bg-white p-5 shadow-[0_12px_30px_-24px_rgba(67,43,28,0.38)] transition-colors hover:border-[#D8C2AF] sm:p-6"
             >
               <div className="flex items-center justify-between">
                 <span className="grid size-11 place-items-center rounded-xl bg-[#F8ECE2] text-[#B34B31]">

@@ -270,7 +270,7 @@ export default function AdminDashboard() {
           Admin workspace
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#30231B] sm:text-4xl">
-          Platform dashboard
+          Admin dashboard
         </h1>
       </header>
 
